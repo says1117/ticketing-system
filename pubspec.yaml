@@ -1,0 +1,19 @@
+name: lsi_ticketing
+description: Ticketing data layer for the Limbitless team site (parts, tickets, history, comments) on the 'team' Realtime Database.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # same majors as lsicompapp, so it drops in without a version conflict
+  firebase_core: ^4.11.0
+  firebase_database: ^12.4.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

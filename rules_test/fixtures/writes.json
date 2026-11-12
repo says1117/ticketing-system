@@ -1,0 +1,1488 @@
+{
+  "inventory": {
+    "-invFingertip": {
+      "name": "Fingertip",
+      "itemNumber": "FT-01",
+      "stock": 12,
+      "threshold": 4,
+      "type": "Parts"
+    },
+    "-invPalm": {
+      "name": "Left Palm Plate",
+      "itemNumber": "LP-02",
+      "stock": 3,
+      "threshold": 1,
+      "type": "Parts"
+    },
+    "-invBase": {
+      "name": "Index Base",
+      "itemNumber": "IB-03",
+      "stock": 4,
+      "threshold": 1,
+      "type": "Parts"
+    }
+  },
+  "writes": [
+    {
+      "label": "requester submits a job with a first comment (job number)",
+      "user": "req",
+      "update": {
+        "ticketing/counters/job": 1
+      }
+    },
+    {
+      "label": "requester submits a job with a first comment",
+      "user": "req",
+      "update": {
+        "ticketing/jobs/JOB-0001": {
+          "jobId": "JOB-0001",
+          "jobName": "Left arm for patient A",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 5,
+              "held": 0,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-11-30",
+          "priority": "high",
+          "createdAt": "2026-11-12T09:00:00.000Z",
+          "updatedAt": "2026-11-12T09:00:00.000Z",
+          "rev": 1,
+          "lastHistoryId": "-k00000001"
+        },
+        "ticketing/history/-k00000001": {
+          "jobId": "JOB-0001",
+          "type": "created",
+          "to": "Left arm for patient A",
+          "user": "req",
+          "timestamp": "2026-11-12T09:01:00.000Z"
+        },
+        "ticketing/comments/-k00000002": {
+          "jobId": "JOB-0001",
+          "author": "req",
+          "text": "Blue, size M",
+          "timestamp": "2026-11-12T09:00:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "requester edits name, due date, priority and parts before a claim",
+      "user": "req",
+      "update": {
+        "ticketing/jobs/JOB-0001": {
+          "jobId": "JOB-0001",
+          "jobName": "Left arm, patient A",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 5,
+              "held": 0,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 2,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:00:00.000Z",
+          "updatedAt": "2026-11-12T09:03:00.000Z",
+          "rev": 2,
+          "lastHistoryId": "-k00000003"
+        },
+        "ticketing/history/-k00000003": {
+          "jobId": "JOB-0001",
+          "type": "edited",
+          "from": "name Left arm for patient A; for req; due 2026-11-30; priority high; parts 1 x -invPalm, 5 x -invFingertip",
+          "to": "name Left arm, patient A; for req; due 2026-12-02; priority medium; parts 1 x -invPalm, 2 x -invBase, 5 x -invFingertip",
+          "user": "req",
+          "timestamp": "2026-11-12T09:02:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "first claim takes the parts from inventory",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0001": {
+          "jobId": "JOB-0001",
+          "jobName": "Left arm, patient A",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 5,
+              "held": 5,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 2,
+              "held": 2,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man": "2026-11-12T09:04:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:00:00.000Z",
+          "updatedAt": "2026-11-12T09:09:00.000Z",
+          "claimedAt": "2026-11-12T09:04:00.000Z",
+          "rev": 3,
+          "lastHistoryId": "-k00000007"
+        },
+        "ticketing/history/-k00000004": {
+          "jobId": "JOB-0001",
+          "itemId": "-invFingertip",
+          "type": "reserved",
+          "from": "12",
+          "to": "7",
+          "quantityChange": -5,
+          "user": "man",
+          "timestamp": "2026-11-12T09:05:00.000Z"
+        },
+        "ticketing/history/-k00000005": {
+          "jobId": "JOB-0001",
+          "itemId": "-invPalm",
+          "type": "reserved",
+          "from": "3",
+          "to": "2",
+          "quantityChange": -1,
+          "user": "man",
+          "timestamp": "2026-11-12T09:06:00.000Z"
+        },
+        "ticketing/history/-k00000006": {
+          "jobId": "JOB-0001",
+          "itemId": "-invBase",
+          "type": "reserved",
+          "from": "4",
+          "to": "2",
+          "quantityChange": -2,
+          "user": "man",
+          "timestamp": "2026-11-12T09:07:00.000Z"
+        },
+        "ticketing/history/-k00000007": {
+          "jobId": "JOB-0001",
+          "type": "claimed",
+          "to": "man",
+          "user": "man",
+          "timestamp": "2026-11-12T09:08:00.000Z"
+        },
+        "inventory/-invFingertip/stock": 7,
+        "inventory/-invPalm/stock": 2,
+        "inventory/-invBase/stock": 2
+      }
+    },
+    {
+      "label": "a second scholar joins",
+      "user": "man2",
+      "update": {
+        "ticketing/jobs/JOB-0001": {
+          "jobId": "JOB-0001",
+          "jobName": "Left arm, patient A",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 5,
+              "held": 5,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 2,
+              "held": 2,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man": "2026-11-12T09:04:00.000Z",
+            "man2": "2026-11-12T09:10:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:00:00.000Z",
+          "updatedAt": "2026-11-12T09:12:00.000Z",
+          "claimedAt": "2026-11-12T09:04:00.000Z",
+          "rev": 4,
+          "lastHistoryId": "-k00000008"
+        },
+        "ticketing/history/-k00000008": {
+          "jobId": "JOB-0001",
+          "type": "claimed",
+          "to": "man2",
+          "user": "man2",
+          "timestamp": "2026-11-12T09:11:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "requester edits the name while in progress",
+      "user": "req",
+      "update": {
+        "ticketing/jobs/JOB-0001": {
+          "jobId": "JOB-0001",
+          "jobName": "Left arm, patient A (rush)",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 5,
+              "held": 5,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 2,
+              "held": 2,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man": "2026-11-12T09:04:00.000Z",
+            "man2": "2026-11-12T09:10:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:00:00.000Z",
+          "updatedAt": "2026-11-12T09:14:00.000Z",
+          "claimedAt": "2026-11-12T09:04:00.000Z",
+          "rev": 5,
+          "lastHistoryId": "-k00000009"
+        },
+        "ticketing/history/-k00000009": {
+          "jobId": "JOB-0001",
+          "type": "edited",
+          "from": "name Left arm, patient A; for req; due 2026-12-02; priority medium; parts 1 x -invPalm, 2 x -invBase, 5 x -invFingertip",
+          "to": "name Left arm, patient A (rush); for req; due 2026-12-02; priority medium; parts 1 x -invPalm, 2 x -invBase, 5 x -invFingertip",
+          "user": "req",
+          "timestamp": "2026-11-12T09:13:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "requester comments",
+      "user": "req",
+      "update": {
+        "ticketing/comments/-k00000010": {
+          "jobId": "JOB-0001",
+          "author": "req",
+          "text": "Thnks",
+          "timestamp": "2026-11-12T09:15:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "claimer comments",
+      "user": "man2",
+      "update": {
+        "ticketing/comments/-k00000011": {
+          "jobId": "JOB-0001",
+          "author": "man2",
+          "text": "On it",
+          "timestamp": "2026-11-12T09:16:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "quality comments",
+      "user": "qa",
+      "update": {
+        "ticketing/comments/-k00000012": {
+          "jobId": "JOB-0001",
+          "author": "qa",
+          "text": "Inspected",
+          "timestamp": "2026-11-12T09:17:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "author edits a comment",
+      "user": "req",
+      "update": {
+        "ticketing/comments/-k00000010": {
+          "jobId": "JOB-0001",
+          "author": "req",
+          "text": "Thanks!",
+          "timestamp": "2026-11-12T09:15:00.000Z",
+          "editedAt": "2026-11-12T09:18:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "author deletes a comment",
+      "user": "man2",
+      "update": {
+        "ticketing/comments/-k00000011": null
+      }
+    },
+    {
+      "label": "one claimer leaves; parts stay with the job",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0001": {
+          "jobId": "JOB-0001",
+          "jobName": "Left arm, patient A (rush)",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 5,
+              "held": 5,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 2,
+              "held": 2,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T09:10:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:00:00.000Z",
+          "updatedAt": "2026-11-12T09:20:00.000Z",
+          "claimedAt": "2026-11-12T09:04:00.000Z",
+          "rev": 6,
+          "lastHistoryId": "-k00000013"
+        },
+        "ticketing/history/-k00000013": {
+          "jobId": "JOB-0001",
+          "type": "unclaimed",
+          "from": "man",
+          "user": "man",
+          "timestamp": "2026-11-12T09:19:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "a claimer reports defects: remake ticket created, job closed as remade (job number)",
+      "user": "man2",
+      "update": {
+        "ticketing/counters/job": 2
+      }
+    },
+    {
+      "label": "a claimer reports defects: remake ticket created, job closed as remade",
+      "user": "man2",
+      "update": {
+        "ticketing/jobs/JOB-0001": {
+          "jobId": "JOB-0001",
+          "jobName": "Left arm, patient A (rush)",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 5,
+              "held": 4,
+              "scrapped": 1
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 2,
+              "held": 1,
+              "scrapped": 1
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T09:10:00.000Z"
+          },
+          "status": "remade",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:00:00.000Z",
+          "updatedAt": "2026-11-12T09:25:00.000Z",
+          "claimedAt": "2026-11-12T09:04:00.000Z",
+          "rev": 7,
+          "lastHistoryId": "-k00000016",
+          "remadeAs": "JOB-0002"
+        },
+        "ticketing/history/-k00000014": {
+          "jobId": "JOB-0001",
+          "itemId": "-invFingertip",
+          "type": "scrapped",
+          "from": "0",
+          "to": "1",
+          "quantityChange": 1,
+          "user": "man2",
+          "timestamp": "2026-11-12T09:22:00.000Z"
+        },
+        "ticketing/history/-k00000015": {
+          "jobId": "JOB-0001",
+          "itemId": "-invBase",
+          "type": "scrapped",
+          "from": "0",
+          "to": "1",
+          "quantityChange": 1,
+          "user": "man2",
+          "timestamp": "2026-11-12T09:23:00.000Z"
+        },
+        "ticketing/history/-k00000016": {
+          "jobId": "JOB-0001",
+          "type": "remade",
+          "from": "inProgress",
+          "to": "JOB-0002",
+          "user": "man2",
+          "timestamp": "2026-11-12T09:24:00.000Z"
+        },
+        "ticketing/jobs/JOB-0002": {
+          "jobId": "JOB-0002",
+          "jobName": "Left arm, patient A (rush)",
+          "requestedBy": "req",
+          "submittedBy": "man2",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:21:00.000Z",
+          "updatedAt": "2026-11-12T09:21:00.000Z",
+          "rev": 1,
+          "lastHistoryId": "-k00000017",
+          "remakeOf": "JOB-0001",
+          "usedParts": {
+            "-invFingertip": 5,
+            "-invPalm": 1,
+            "-invBase": 2
+          },
+          "defects": {
+            "-invFingertip": {
+              "count": 1,
+              "reason": "cracked at the joint"
+            },
+            "-invBase": {
+              "count": 1
+            }
+          }
+        },
+        "ticketing/history/-k00000017": {
+          "jobId": "JOB-0002",
+          "type": "created",
+          "from": "JOB-0001",
+          "to": "Left arm, patient A (rush)",
+          "user": "man2",
+          "timestamp": "2026-11-12T09:26:00.000Z"
+        },
+        "ticketing/comments/-k00000018": {
+          "jobId": "JOB-0002",
+          "author": "man2",
+          "text": "Replacing the cracked fingertip and a warped base",
+          "timestamp": "2026-11-12T09:21:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "a claimer reports defects: remake ticket created, job closed as remade",
+      "user": "man2",
+      "update": {
+        "ticketing/jobs/JOB-0002": {
+          "jobId": "JOB-0002",
+          "jobName": "Left arm, patient A (rush)",
+          "requestedBy": "req",
+          "submittedBy": "man2",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T09:27:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:21:00.000Z",
+          "updatedAt": "2026-11-12T09:31:00.000Z",
+          "claimedAt": "2026-11-12T09:27:00.000Z",
+          "rev": 2,
+          "lastHistoryId": "-k00000021",
+          "remakeOf": "JOB-0001",
+          "usedParts": {
+            "-invFingertip": 5,
+            "-invPalm": 1,
+            "-invBase": 2
+          },
+          "defects": {
+            "-invFingertip": {
+              "count": 1,
+              "reason": "cracked at the joint"
+            },
+            "-invBase": {
+              "count": 1
+            }
+          }
+        },
+        "ticketing/history/-k00000019": {
+          "jobId": "JOB-0002",
+          "itemId": "-invFingertip",
+          "type": "reserved",
+          "from": "7",
+          "to": "6",
+          "quantityChange": -1,
+          "user": "man2",
+          "timestamp": "2026-11-12T09:28:00.000Z"
+        },
+        "ticketing/history/-k00000020": {
+          "jobId": "JOB-0002",
+          "itemId": "-invBase",
+          "type": "reserved",
+          "from": "2",
+          "to": "1",
+          "quantityChange": -1,
+          "user": "man2",
+          "timestamp": "2026-11-12T09:29:00.000Z"
+        },
+        "ticketing/history/-k00000021": {
+          "jobId": "JOB-0002",
+          "type": "claimed",
+          "to": "man2",
+          "user": "man2",
+          "timestamp": "2026-11-12T09:30:00.000Z"
+        },
+        "inventory/-invFingertip/stock": 6,
+        "inventory/-invBase/stock": 1
+      }
+    },
+    {
+      "label": "another scholar joins the remake",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0002": {
+          "jobId": "JOB-0002",
+          "jobName": "Left arm, patient A (rush)",
+          "requestedBy": "req",
+          "submittedBy": "man2",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T09:27:00.000Z",
+            "man": "2026-11-12T09:32:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:21:00.000Z",
+          "updatedAt": "2026-11-12T09:34:00.000Z",
+          "claimedAt": "2026-11-12T09:27:00.000Z",
+          "rev": 3,
+          "lastHistoryId": "-k00000022",
+          "remakeOf": "JOB-0001",
+          "usedParts": {
+            "-invFingertip": 5,
+            "-invPalm": 1,
+            "-invBase": 2
+          },
+          "defects": {
+            "-invFingertip": {
+              "count": 1,
+              "reason": "cracked at the joint"
+            },
+            "-invBase": {
+              "count": 1
+            }
+          }
+        },
+        "ticketing/history/-k00000022": {
+          "jobId": "JOB-0002",
+          "type": "claimed",
+          "to": "man",
+          "user": "man",
+          "timestamp": "2026-11-12T09:33:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "the remake is completed",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0002": {
+          "jobId": "JOB-0002",
+          "jobName": "Left arm, patient A (rush)",
+          "requestedBy": "req",
+          "submittedBy": "man2",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            },
+            "-invBase": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T09:27:00.000Z",
+            "man": "2026-11-12T09:32:00.000Z"
+          },
+          "status": "completed",
+          "neededBy": "2026-12-02",
+          "priority": "medium",
+          "createdAt": "2026-11-12T09:21:00.000Z",
+          "updatedAt": "2026-11-12T09:37:00.000Z",
+          "claimedAt": "2026-11-12T09:27:00.000Z",
+          "completedAt": "2026-11-12T09:36:00.000Z",
+          "rev": 4,
+          "lastHistoryId": "-k00000023",
+          "remakeOf": "JOB-0001",
+          "usedParts": {
+            "-invFingertip": 5,
+            "-invPalm": 1,
+            "-invBase": 2
+          },
+          "defects": {
+            "-invFingertip": {
+              "count": 1,
+              "reason": "cracked at the joint"
+            },
+            "-invBase": {
+              "count": 1
+            }
+          }
+        },
+        "ticketing/history/-k00000023": {
+          "jobId": "JOB-0002",
+          "type": "completed",
+          "from": "inProgress",
+          "to": "completed",
+          "user": "man",
+          "timestamp": "2026-11-12T09:35:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "an admin submits a job on behalf of a scholar (job number)",
+      "user": "adm",
+      "update": {
+        "ticketing/counters/job": 3
+      }
+    },
+    {
+      "label": "an admin submits a job on behalf of a scholar",
+      "user": "adm",
+      "update": {
+        "ticketing/jobs/JOB-0003": {
+          "jobId": "JOB-0003",
+          "jobName": "Spare hand",
+          "requestedBy": "req",
+          "submittedBy": "adm",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 2,
+              "held": 0,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:38:00.000Z",
+          "updatedAt": "2026-11-12T09:38:00.000Z",
+          "rev": 1,
+          "lastHistoryId": "-k00000024"
+        },
+        "ticketing/history/-k00000024": {
+          "jobId": "JOB-0003",
+          "type": "created",
+          "to": "Spare hand",
+          "user": "adm",
+          "timestamp": "2026-11-12T09:39:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "the scholar it is for changes the requester",
+      "user": "req",
+      "update": {
+        "ticketing/jobs/JOB-0003": {
+          "jobId": "JOB-0003",
+          "jobName": "Spare hand",
+          "requestedBy": "man2",
+          "submittedBy": "adm",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 2,
+              "held": 0,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:38:00.000Z",
+          "updatedAt": "2026-11-12T09:41:00.000Z",
+          "rev": 2,
+          "lastHistoryId": "-k00000025"
+        },
+        "ticketing/history/-k00000025": {
+          "jobId": "JOB-0003",
+          "type": "edited",
+          "from": "name Spare hand; for req; due 2026-11-30; priority -; parts 1 x -invPalm, 2 x -invFingertip",
+          "to": "name Spare hand; for man2; due 2026-11-30; priority -; parts 1 x -invPalm, 2 x -invFingertip",
+          "user": "req",
+          "timestamp": "2026-11-12T09:40:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "claim the spare job",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0003": {
+          "jobId": "JOB-0003",
+          "jobName": "Spare hand",
+          "requestedBy": "man2",
+          "submittedBy": "adm",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 2,
+              "held": 2,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man": "2026-11-12T09:42:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:38:00.000Z",
+          "updatedAt": "2026-11-12T09:46:00.000Z",
+          "claimedAt": "2026-11-12T09:42:00.000Z",
+          "rev": 3,
+          "lastHistoryId": "-k00000028"
+        },
+        "ticketing/history/-k00000026": {
+          "jobId": "JOB-0003",
+          "itemId": "-invFingertip",
+          "type": "reserved",
+          "from": "6",
+          "to": "4",
+          "quantityChange": -2,
+          "user": "man",
+          "timestamp": "2026-11-12T09:43:00.000Z"
+        },
+        "ticketing/history/-k00000027": {
+          "jobId": "JOB-0003",
+          "itemId": "-invPalm",
+          "type": "reserved",
+          "from": "2",
+          "to": "1",
+          "quantityChange": -1,
+          "user": "man",
+          "timestamp": "2026-11-12T09:44:00.000Z"
+        },
+        "ticketing/history/-k00000028": {
+          "jobId": "JOB-0003",
+          "type": "claimed",
+          "to": "man",
+          "user": "man",
+          "timestamp": "2026-11-12T09:45:00.000Z"
+        },
+        "inventory/-invFingertip/stock": 4,
+        "inventory/-invPalm/stock": 1
+      }
+    },
+    {
+      "label": "last claimer leaves; parts go back",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0003": {
+          "jobId": "JOB-0003",
+          "jobName": "Spare hand",
+          "requestedBy": "man2",
+          "submittedBy": "adm",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 2,
+              "held": 0,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:38:00.000Z",
+          "updatedAt": "2026-11-12T09:50:00.000Z",
+          "rev": 4,
+          "lastHistoryId": "-k00000029"
+        },
+        "ticketing/history/-k00000030": {
+          "jobId": "JOB-0003",
+          "itemId": "-invFingertip",
+          "type": "returned",
+          "from": "4",
+          "to": "6",
+          "quantityChange": 2,
+          "user": "man",
+          "timestamp": "2026-11-12T09:48:00.000Z"
+        },
+        "ticketing/history/-k00000031": {
+          "jobId": "JOB-0003",
+          "itemId": "-invPalm",
+          "type": "returned",
+          "from": "1",
+          "to": "2",
+          "quantityChange": 1,
+          "user": "man",
+          "timestamp": "2026-11-12T09:49:00.000Z"
+        },
+        "ticketing/history/-k00000029": {
+          "jobId": "JOB-0003",
+          "type": "unclaimed",
+          "from": "man",
+          "user": "man",
+          "timestamp": "2026-11-12T09:47:00.000Z"
+        },
+        "inventory/-invFingertip/stock": 6,
+        "inventory/-invPalm/stock": 2
+      }
+    },
+    {
+      "label": "the new requester cancels the requested job",
+      "user": "man2",
+      "update": {
+        "ticketing/jobs/JOB-0003": {
+          "jobId": "JOB-0003",
+          "jobName": "Spare hand",
+          "requestedBy": "man2",
+          "submittedBy": "adm",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 2,
+              "held": 0,
+              "scrapped": 0
+            },
+            "-invPalm": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "cancelled",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:38:00.000Z",
+          "updatedAt": "2026-11-12T09:52:00.000Z",
+          "rev": 5,
+          "lastHistoryId": "-k00000032"
+        },
+        "ticketing/history/-k00000032": {
+          "jobId": "JOB-0003",
+          "type": "cancelled",
+          "from": "requested",
+          "to": "cancelled",
+          "user": "man2",
+          "timestamp": "2026-11-12T09:51:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "requester submits a job for the last base (job number)",
+      "user": "req",
+      "update": {
+        "ticketing/counters/job": 4
+      }
+    },
+    {
+      "label": "requester submits a job for the last base",
+      "user": "req",
+      "update": {
+        "ticketing/jobs/JOB-0004": {
+          "jobId": "JOB-0004",
+          "jobName": "Index finger",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invBase": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:53:00.000Z",
+          "updatedAt": "2026-11-12T09:53:00.000Z",
+          "rev": 1,
+          "lastHistoryId": "-k00000033"
+        },
+        "ticketing/history/-k00000033": {
+          "jobId": "JOB-0004",
+          "type": "created",
+          "to": "Index finger",
+          "user": "req",
+          "timestamp": "2026-11-12T09:54:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "claim takes the last base",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0004": {
+          "jobId": "JOB-0004",
+          "jobName": "Index finger",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invBase": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man": "2026-11-12T09:55:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:53:00.000Z",
+          "updatedAt": "2026-11-12T09:58:00.000Z",
+          "claimedAt": "2026-11-12T09:55:00.000Z",
+          "rev": 2,
+          "lastHistoryId": "-k00000035"
+        },
+        "ticketing/history/-k00000034": {
+          "jobId": "JOB-0004",
+          "itemId": "-invBase",
+          "type": "reserved",
+          "from": "1",
+          "to": "0",
+          "quantityChange": -1,
+          "user": "man",
+          "timestamp": "2026-11-12T09:56:00.000Z"
+        },
+        "ticketing/history/-k00000035": {
+          "jobId": "JOB-0004",
+          "type": "claimed",
+          "to": "man",
+          "user": "man",
+          "timestamp": "2026-11-12T09:57:00.000Z"
+        },
+        "inventory/-invBase/stock": 0
+      }
+    },
+    {
+      "label": "complete the index finger",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0004": {
+          "jobId": "JOB-0004",
+          "jobName": "Index finger",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invBase": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man": "2026-11-12T09:55:00.000Z"
+          },
+          "status": "completed",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:53:00.000Z",
+          "updatedAt": "2026-11-12T10:01:00.000Z",
+          "claimedAt": "2026-11-12T09:55:00.000Z",
+          "completedAt": "2026-11-12T10:00:00.000Z",
+          "rev": 3,
+          "lastHistoryId": "-k00000036"
+        },
+        "ticketing/history/-k00000036": {
+          "jobId": "JOB-0004",
+          "type": "completed",
+          "from": "inProgress",
+          "to": "completed",
+          "user": "man",
+          "timestamp": "2026-11-12T09:59:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "quality reports a defect on a completed job (job number)",
+      "user": "qa",
+      "update": {
+        "ticketing/counters/job": 5
+      }
+    },
+    {
+      "label": "quality reports a defect on a completed job",
+      "user": "qa",
+      "update": {
+        "ticketing/jobs/JOB-0004": {
+          "jobId": "JOB-0004",
+          "jobName": "Index finger",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invBase": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 1
+            }
+          },
+          "claimers": {
+            "man": "2026-11-12T09:55:00.000Z"
+          },
+          "status": "remade",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T09:53:00.000Z",
+          "updatedAt": "2026-11-12T10:05:00.000Z",
+          "claimedAt": "2026-11-12T09:55:00.000Z",
+          "completedAt": "2026-11-12T10:00:00.000Z",
+          "rev": 4,
+          "lastHistoryId": "-k00000038",
+          "remadeAs": "JOB-0005"
+        },
+        "ticketing/history/-k00000037": {
+          "jobId": "JOB-0004",
+          "itemId": "-invBase",
+          "type": "scrapped",
+          "from": "0",
+          "to": "1",
+          "quantityChange": 1,
+          "user": "qa",
+          "timestamp": "2026-11-12T10:03:00.000Z"
+        },
+        "ticketing/history/-k00000038": {
+          "jobId": "JOB-0004",
+          "type": "remade",
+          "from": "completed",
+          "to": "JOB-0005",
+          "user": "qa",
+          "timestamp": "2026-11-12T10:04:00.000Z"
+        },
+        "ticketing/jobs/JOB-0005": {
+          "jobId": "JOB-0005",
+          "jobName": "Index finger",
+          "requestedBy": "req",
+          "submittedBy": "qa",
+          "lines": {
+            "-invBase": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T10:02:00.000Z",
+          "updatedAt": "2026-11-12T10:02:00.000Z",
+          "rev": 1,
+          "lastHistoryId": "-k00000039",
+          "remakeOf": "JOB-0004",
+          "usedParts": {
+            "-invBase": 1
+          },
+          "defects": {
+            "-invBase": {
+              "count": 1,
+              "reason": "bent in QC"
+            }
+          }
+        },
+        "ticketing/history/-k00000039": {
+          "jobId": "JOB-0005",
+          "type": "created",
+          "from": "JOB-0004",
+          "to": "Index finger",
+          "user": "qa",
+          "timestamp": "2026-11-12T10:06:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "the inventory page receives more bases",
+      "user": "adm",
+      "update": {
+        "inventory/-invBase/stock": 3
+      }
+    },
+    {
+      "label": "claim the quality remake once stock is back",
+      "user": "man2",
+      "update": {
+        "ticketing/jobs/JOB-0005": {
+          "jobId": "JOB-0005",
+          "jobName": "Index finger",
+          "requestedBy": "req",
+          "submittedBy": "qa",
+          "lines": {
+            "-invBase": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T10:07:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-11-30",
+          "createdAt": "2026-11-12T10:02:00.000Z",
+          "updatedAt": "2026-11-12T10:10:00.000Z",
+          "claimedAt": "2026-11-12T10:07:00.000Z",
+          "rev": 2,
+          "lastHistoryId": "-k00000041",
+          "remakeOf": "JOB-0004",
+          "usedParts": {
+            "-invBase": 1
+          },
+          "defects": {
+            "-invBase": {
+              "count": 1,
+              "reason": "bent in QC"
+            }
+          }
+        },
+        "ticketing/history/-k00000040": {
+          "jobId": "JOB-0005",
+          "itemId": "-invBase",
+          "type": "reserved",
+          "from": "3",
+          "to": "2",
+          "quantityChange": -1,
+          "user": "man2",
+          "timestamp": "2026-11-12T10:08:00.000Z"
+        },
+        "ticketing/history/-k00000041": {
+          "jobId": "JOB-0005",
+          "type": "claimed",
+          "to": "man2",
+          "user": "man2",
+          "timestamp": "2026-11-12T10:09:00.000Z"
+        },
+        "inventory/-invBase/stock": 2
+      }
+    },
+    {
+      "label": "requester submits a job an admin will manage (job number)",
+      "user": "req",
+      "update": {
+        "ticketing/counters/job": 6
+      }
+    },
+    {
+      "label": "requester submits a job an admin will manage",
+      "user": "req",
+      "update": {
+        "ticketing/jobs/JOB-0006": {
+          "jobId": "JOB-0006",
+          "jobName": "Extra fingertips",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-11-30",
+          "priority": "low",
+          "createdAt": "2026-11-12T10:11:00.000Z",
+          "updatedAt": "2026-11-12T10:11:00.000Z",
+          "rev": 1,
+          "lastHistoryId": "-k00000042"
+        },
+        "ticketing/history/-k00000042": {
+          "jobId": "JOB-0006",
+          "type": "created",
+          "to": "Extra fingertips",
+          "user": "req",
+          "timestamp": "2026-11-12T10:12:00.000Z"
+        }
+      }
+    },
+    {
+      "label": "claim before the admin steps in",
+      "user": "man",
+      "update": {
+        "ticketing/jobs/JOB-0006": {
+          "jobId": "JOB-0006",
+          "jobName": "Extra fingertips",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man": "2026-11-12T10:13:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-11-30",
+          "priority": "low",
+          "createdAt": "2026-11-12T10:11:00.000Z",
+          "updatedAt": "2026-11-12T10:16:00.000Z",
+          "claimedAt": "2026-11-12T10:13:00.000Z",
+          "rev": 2,
+          "lastHistoryId": "-k00000044"
+        },
+        "ticketing/history/-k00000043": {
+          "jobId": "JOB-0006",
+          "itemId": "-invFingertip",
+          "type": "reserved",
+          "from": "6",
+          "to": "5",
+          "quantityChange": -1,
+          "user": "man",
+          "timestamp": "2026-11-12T10:14:00.000Z"
+        },
+        "ticketing/history/-k00000044": {
+          "jobId": "JOB-0006",
+          "type": "claimed",
+          "to": "man",
+          "user": "man",
+          "timestamp": "2026-11-12T10:15:00.000Z"
+        },
+        "inventory/-invFingertip/stock": 5
+      }
+    },
+    {
+      "label": "admin unclaims someone else, returning parts",
+      "user": "adm",
+      "update": {
+        "ticketing/jobs/JOB-0006": {
+          "jobId": "JOB-0006",
+          "jobName": "Extra fingertips",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "status": "requested",
+          "neededBy": "2026-11-30",
+          "priority": "low",
+          "createdAt": "2026-11-12T10:11:00.000Z",
+          "updatedAt": "2026-11-12T10:19:00.000Z",
+          "rev": 3,
+          "lastHistoryId": "-k00000045"
+        },
+        "ticketing/history/-k00000046": {
+          "jobId": "JOB-0006",
+          "itemId": "-invFingertip",
+          "type": "returned",
+          "from": "5",
+          "to": "6",
+          "quantityChange": 1,
+          "user": "adm",
+          "timestamp": "2026-11-12T10:18:00.000Z"
+        },
+        "ticketing/history/-k00000045": {
+          "jobId": "JOB-0006",
+          "type": "unclaimed",
+          "from": "man",
+          "user": "adm",
+          "timestamp": "2026-11-12T10:17:00.000Z"
+        },
+        "inventory/-invFingertip/stock": 6
+      }
+    },
+    {
+      "label": "claim again",
+      "user": "man2",
+      "update": {
+        "ticketing/jobs/JOB-0006": {
+          "jobId": "JOB-0006",
+          "jobName": "Extra fingertips",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T10:20:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-11-30",
+          "priority": "low",
+          "createdAt": "2026-11-12T10:11:00.000Z",
+          "updatedAt": "2026-11-12T10:23:00.000Z",
+          "claimedAt": "2026-11-12T10:20:00.000Z",
+          "rev": 4,
+          "lastHistoryId": "-k00000048"
+        },
+        "ticketing/history/-k00000047": {
+          "jobId": "JOB-0006",
+          "itemId": "-invFingertip",
+          "type": "reserved",
+          "from": "6",
+          "to": "5",
+          "quantityChange": -1,
+          "user": "man2",
+          "timestamp": "2026-11-12T10:21:00.000Z"
+        },
+        "ticketing/history/-k00000048": {
+          "jobId": "JOB-0006",
+          "type": "claimed",
+          "to": "man2",
+          "user": "man2",
+          "timestamp": "2026-11-12T10:22:00.000Z"
+        },
+        "inventory/-invFingertip/stock": 5
+      }
+    },
+    {
+      "label": "admin cancels an in-progress job, returning parts",
+      "user": "adm",
+      "update": {
+        "ticketing/jobs/JOB-0006": {
+          "jobId": "JOB-0006",
+          "jobName": "Extra fingertips",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 0,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T10:20:00.000Z"
+          },
+          "status": "cancelled",
+          "neededBy": "2026-11-30",
+          "priority": "low",
+          "createdAt": "2026-11-12T10:11:00.000Z",
+          "updatedAt": "2026-11-12T10:26:00.000Z",
+          "claimedAt": "2026-11-12T10:20:00.000Z",
+          "rev": 5,
+          "lastHistoryId": "-k00000050"
+        },
+        "ticketing/history/-k00000049": {
+          "jobId": "JOB-0006",
+          "itemId": "-invFingertip",
+          "type": "returned",
+          "from": "5",
+          "to": "6",
+          "quantityChange": 1,
+          "user": "adm",
+          "timestamp": "2026-11-12T10:24:00.000Z"
+        },
+        "ticketing/history/-k00000050": {
+          "jobId": "JOB-0006",
+          "type": "cancelled",
+          "from": "inProgress",
+          "to": "cancelled",
+          "user": "adm",
+          "timestamp": "2026-11-12T10:25:00.000Z"
+        },
+        "inventory/-invFingertip/stock": 6
+      }
+    },
+    {
+      "label": "admin deletes someone else's comment",
+      "user": "adm",
+      "update": {
+        "ticketing/comments/-k00000012": null
+      }
+    }
+  ]
+}

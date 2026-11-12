@@ -1,0 +1,183 @@
+{
+  "rules": {
+    "ticketing": {
+      ".read": "auth != null && root.child('users/' + auth.uid + '/orgData/active').val() === true",
+      "counters": {
+        "job": {
+          ".write": "auth != null && root.child('users/' + auth.uid + '/orgData/active').val() === true",
+          ".validate": "newData.isNumber() && ((!data.exists() && newData.val() === 1) || (data.exists() && newData.val() === data.val() + 1))"
+        },
+        "$other": {
+          ".validate": "false"
+        }
+      },
+      "jobs": {
+        ".indexOn": [
+          "status",
+          "requestedBy",
+          "createdAt"
+        ],
+        "$jobId": {
+          ".write": "auth != null && root.child('users/' + auth.uid + '/orgData/active').val() === true && newData.exists() && ((!data.exists() && newData.child('submittedBy').val() === auth.uid && newData.child('status').val() === 'requested' && !newData.child('claimers').exists() && !newData.child('claimedAt').exists() && !newData.child('completedAt').exists()) || (data.exists() && root.child('users/' + auth.uid + '/orgData/status').val() === 'OrgStatus.admin' && newData.child('jobId').val() === data.child('jobId').val() && newData.child('submittedBy').val() === data.child('submittedBy').val() && newData.child('createdAt').val() === data.child('createdAt').val()) || (data.exists() && (data.child('status').val() === 'requested' || data.child('status').val() === 'inProgress') && ((!data.child('claimers').child(auth.uid).exists() && newData.child('claimers').child(auth.uid).exists() && newData.child('jobId').val() === data.child('jobId').val() && newData.child('submittedBy').val() === data.child('submittedBy').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('jobName').val() === data.child('jobName').val() && newData.child('requestedBy').val() === data.child('requestedBy').val() && newData.child('neededBy').val() === data.child('neededBy').val() && newData.child('priority').val() === data.child('priority').val() && newData.child('status').val() === 'inProgress') || (data.child('claimers').child(auth.uid).exists() && !newData.child('claimers').child(auth.uid).exists() && newData.child('jobId').val() === data.child('jobId').val() && newData.child('submittedBy').val() === data.child('submittedBy').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('jobName').val() === data.child('jobName').val() && newData.child('requestedBy').val() === data.child('requestedBy').val() && newData.child('neededBy').val() === data.child('neededBy').val() && newData.child('priority').val() === data.child('priority').val() && newData.child('status').val().matches(/^(requested|inProgress)$/)) || (data.child('claimers').child(auth.uid).exists() && newData.child('claimers').child(auth.uid).exists() && newData.child('jobId').val() === data.child('jobId').val() && newData.child('submittedBy').val() === data.child('submittedBy').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('jobName').val() === data.child('jobName').val() && newData.child('requestedBy').val() === data.child('requestedBy').val() && newData.child('neededBy').val() === data.child('neededBy').val() && newData.child('priority').val() === data.child('priority').val() && newData.child('status').val().matches(/^(inProgress|completed)$/)) || ((data.child('requestedBy').val() === auth.uid || data.child('submittedBy').val() === auth.uid) && newData.child('jobId').val() === data.child('jobId').val() && newData.child('submittedBy').val() === data.child('submittedBy').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('claimedAt').val() === data.child('claimedAt').val() && (newData.child('status').val() === data.child('status').val() || newData.child('status').val() === 'cancelled')))) || (data.exists() && data.child('status').val().matches(/^(inProgress|completed)$/) && newData.child('status').val() === 'remade' && (root.child('users/' + auth.uid + '/orgData/status').val() === 'OrgStatus.admin' || data.child('requestedBy').val() === auth.uid || data.child('submittedBy').val() === auth.uid || data.child('claimers').child(auth.uid).exists() || root.child('users/' + auth.uid + '/orgData/department').val() === 'Quality' || root.child('users/' + auth.uid + '/orgData/department').val() === 'Assembly' || root.child('users/' + auth.uid + '/orgData/department').val() === 'Production' || root.child('users/' + auth.uid + '/orgData/subDepartments').val() === 'Quality' || root.child('users/' + auth.uid + '/orgData/subDepartments').val() === 'Assembly' || root.child('users/' + auth.uid + '/orgData/subDepartments').val() === 'Production') && newData.child('jobId').val() === data.child('jobId').val() && newData.child('submittedBy').val() === data.child('submittedBy').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('jobName').val() === data.child('jobName').val() && newData.child('requestedBy').val() === data.child('requestedBy').val() && newData.child('neededBy').val() === data.child('neededBy').val() && newData.child('priority').val() === data.child('priority').val() && newData.child('claimedAt').val() === data.child('claimedAt').val() && newData.child('completedAt').val() === data.child('completedAt').val() && newData.parent().child(newData.child('remadeAs').val()).child('remakeOf').val() === $jobId))",
+          ".validate": "newData.hasChildren(['jobId', 'jobName', 'requestedBy', 'submittedBy', 'neededBy', 'lines', 'status', 'createdAt', 'updatedAt', 'rev', 'lastHistoryId']) && $jobId.matches(/^JOB-[0-9]{4,}$/) && newData.child('jobId').val() === $jobId && ((!data.exists() && newData.child('rev').val() === 1) || (data.exists() && newData.child('rev').val() === data.child('rev').val() + 1)) && newData.child('lastHistoryId').isString() && !root.child('ticketing/history/' + newData.child('lastHistoryId').val()).exists() && newData.parent().parent().child('history').child(newData.child('lastHistoryId').val()).child('jobId').val() === $jobId && (newData.child('status').val() !== 'inProgress' || newData.child('claimers').exists()) && (newData.child('status').val() !== 'requested' || !newData.child('claimers').exists()) && (newData.child('status').val() !== 'completed' || newData.child('completedAt').exists()) && (newData.child('status').val() !== 'remade' || newData.child('remadeAs').exists()) && (!newData.child('remakeOf').exists() || newData.parent().child(newData.child('remakeOf').val()).child('remadeAs').val() === $jobId)",
+          "jobId": {
+            ".validate": "newData.isString()"
+          },
+          "jobName": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+          },
+          "requestedBy": {
+            ".validate": "newData.isString() && (newData.val() === data.val() || root.child('users/' + newData.val() + '/orgData/active').val() === true)"
+          },
+          "submittedBy": {
+            ".validate": "newData.isString()"
+          },
+          "priority": {
+            ".validate": "newData.isString() && newData.val().matches(/^(low|medium|high)$/)"
+          },
+          "lines": {
+            "$itemId": {
+              ".validate": "newData.hasChildren(['quantity', 'held', 'scrapped']) && newData.child('held').val() <= newData.child('quantity').val() && (!newData.parent().parent().child('status').val().matches(/^(requested|cancelled)$/) || newData.child('held').val() === 0) && (newData.parent().parent().child('status').val() !== 'completed' || newData.child('held').val() === newData.child('quantity').val()) && (data.exists() || (newData.child('held').val() === 0 && newData.child('scrapped').val() === 0 && root.child('inventory/' + $itemId).exists() && (!data.parent().parent().exists() || data.parent().parent().child('status').val() === 'requested'))) && (!data.exists() || newData.child('quantity').val() === data.child('quantity').val() || data.parent().parent().child('status').val() === 'requested') && (!data.exists() || newData.child('scrapped').val() === data.child('scrapped').val() || (newData.parent().parent().child('status').val() === 'remade' && newData.child('scrapped').val() > data.child('scrapped').val())) && (!data.exists() || !root.child('inventory/' + $itemId).exists() || newData.parent().parent().parent().parent().parent().child('inventory/' + $itemId + '/stock').val() - root.child('inventory/' + $itemId + '/stock').val() === 0 - ((newData.child('held').val() - data.child('held').val()) + (newData.child('scrapped').val() - data.child('scrapped').val()))) && (!data.exists() || !root.child('inventory/' + $itemId).exists() || ((newData.child('held').val() - data.child('held').val()) + (newData.child('scrapped').val() - data.child('scrapped').val())) <= 0 || newData.parent().parent().parent().parent().parent().child('inventory/' + $itemId + '/stock').val() >= 0)",
+              "quantity": {
+                ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() > 0"
+              },
+              "held": {
+                ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0"
+              },
+              "scrapped": {
+                ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0"
+              },
+              "$other": {
+                ".validate": "false"
+              }
+            }
+          },
+          "claimers": {
+            "$uid": {
+              ".validate": "newData.isString() && (newData.val() === data.val() || $uid === auth.uid || root.child('users/' + auth.uid + '/orgData/status').val() === 'OrgStatus.admin')"
+            }
+          },
+          "status": {
+            ".validate": "newData.isString() && newData.val().matches(/^(requested|inProgress|completed|cancelled|remade)$/)"
+          },
+          "neededBy": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+          },
+          "createdAt": {
+            ".validate": "newData.isString()"
+          },
+          "updatedAt": {
+            ".validate": "newData.isString()"
+          },
+          "claimedAt": {
+            ".validate": "newData.isString()"
+          },
+          "completedAt": {
+            ".validate": "newData.isString()"
+          },
+          "rev": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0"
+          },
+          "lastHistoryId": {
+            ".validate": "newData.isString()"
+          },
+          "remakeOf": {
+            ".validate": "newData.isString() && (!root.child('ticketing/jobs/' + $jobId).exists() || newData.val() === data.val())"
+          },
+          "remadeAs": {
+            ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())"
+          },
+          "usedParts": {
+            "$itemId": {
+              ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && (!root.child('ticketing/jobs/' + $jobId).exists() || newData.val() === data.val())"
+            }
+          },
+          "defects": {
+            "$itemId": {
+              ".validate": "newData.hasChildren(['count']) && (!root.child('ticketing/jobs/' + $jobId).exists() || (newData.child('count').val() === data.child('count').val() && newData.child('reason').val() === data.child('reason').val()))",
+              "count": {
+                ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() > 0"
+              },
+              "reason": {
+                ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 500"
+              },
+              "$other": {
+                ".validate": "false"
+              }
+            }
+          },
+          "$other": {
+            ".validate": "false"
+          }
+        }
+      },
+      "history": {
+        ".indexOn": [
+          "jobId",
+          "itemId"
+        ],
+        "$historyId": {
+          ".write": "auth != null && root.child('users/' + auth.uid + '/orgData/active').val() === true && !data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['jobId', 'type', 'user', 'timestamp']) && newData.child('user').val() === auth.uid",
+          "jobId": {
+            ".validate": "newData.isString()"
+          },
+          "itemId": {
+            ".validate": "newData.isString()"
+          },
+          "type": {
+            ".validate": "newData.isString() && newData.val().matches(/^(created|edited|claimed|unclaimed|reserved|returned|scrapped|completed|cancelled|remade)$/)"
+          },
+          "from": {
+            ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 2000"
+          },
+          "to": {
+            ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 2000"
+          },
+          "quantityChange": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0"
+          },
+          "user": {
+            ".validate": "newData.isString()"
+          },
+          "timestamp": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": "false"
+          }
+        }
+      },
+      "comments": {
+        ".indexOn": [
+          "jobId"
+        ],
+        "$commentId": {
+          ".write": "auth != null && root.child('users/' + auth.uid + '/orgData/active').val() === true && ((!data.exists() && newData.exists() && (root.child('users/' + auth.uid + '/orgData/status').val() === 'OrgStatus.admin' || newData.parent().parent().child('jobs').child(newData.child('jobId').val()).child('requestedBy').val() === auth.uid || newData.parent().parent().child('jobs').child(newData.child('jobId').val()).child('submittedBy').val() === auth.uid || newData.parent().parent().child('jobs').child(newData.child('jobId').val()).child('claimers').child(auth.uid).exists() || root.child('users/' + auth.uid + '/orgData/department').val() === 'Quality' || root.child('users/' + auth.uid + '/orgData/department').val() === 'Assembly' || root.child('users/' + auth.uid + '/orgData/department').val() === 'Production' || root.child('users/' + auth.uid + '/orgData/subDepartments').val() === 'Quality' || root.child('users/' + auth.uid + '/orgData/subDepartments').val() === 'Assembly' || root.child('users/' + auth.uid + '/orgData/subDepartments').val() === 'Production')) || (data.exists() && newData.exists() && data.child('author').val() === auth.uid && newData.child('author').val() === data.child('author').val() && newData.child('jobId').val() === data.child('jobId').val() && newData.child('timestamp').val() === data.child('timestamp').val()) || (data.exists() && !newData.exists() && (data.child('author').val() === auth.uid || root.child('users/' + auth.uid + '/orgData/status').val() === 'OrgStatus.admin')))",
+          ".validate": "newData.hasChildren(['jobId', 'author', 'text', 'timestamp']) && newData.child('author').val() === auth.uid && newData.parent().parent().child('jobs').child(newData.child('jobId').val()).exists()",
+          "jobId": {
+            ".validate": "newData.isString()"
+          },
+          "author": {
+            ".validate": "newData.isString()"
+          },
+          "text": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 2000"
+          },
+          "timestamp": {
+            ".validate": "newData.isString()"
+          },
+          "editedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": "false"
+          }
+        }
+      },
+      "$other": {
+        ".validate": "false"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+# import script output and CLI exports: real inventory data, not source
+parts_import.json
+existing_parts.json
+
+# rules_test
+rules_test/node_modules/
+rules_test/*.log

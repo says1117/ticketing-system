@@ -1,0 +1,13 @@
+{
+  "name": "lsi-ticketing-rules-test",
+  "private": true,
+  "description": "Runs rules/ticketing.rules.json in the Firebase Realtime Database emulator.",
+  "scripts": {
+    "test": "firebase emulators:exec --only database --project demo-lsi-ticketing \"node --test\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.2.0",
+    "firebase-tools": "15.35.0"
+  }
+}
