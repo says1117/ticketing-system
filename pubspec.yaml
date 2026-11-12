@@ -12,6 +12,8 @@ dependencies:
   # same majors as lsicompapp, so it drops in without a version conflict
   firebase_core: ^4.11.0
   firebase_database: ^12.4.4
+  # date formatting on the page; same version range as lsicompapp
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

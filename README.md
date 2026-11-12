@@ -102,6 +102,59 @@ Inactive users (`orgData.active != true`) can't read or write anything.
 lsicompapp has no Assembly department today; it's allowed by name so it works
 once one exists.
 
+## The main page
+
+`TicketingPage` (`lib/src/ui/ticketing_page.dart`) follows the mockups:
+
+- **Top:** a search bar, then the **In-Progress | Requested | Log** tabs with a
+  Sort by dropdown on the right.
+- **In-Progress:** Job Name | Status | Time Requested | Time Claimed |
+  Requested By | Edit | Unclaim.
+- **Requested:** Job Name | Requested By | Priority | Date Requested | Claim.
+- **Log:** an activity feed with All / Completed / Failed filters (Failed means
+  remade).
+- **The + button** (bottom left) requests a job.
+
+Below 900 px wide the lists switch from tables to cards with 44 px buttons.
+The page reads `Theme.of(context)` only, so in lsicompapp it follows the user's
+theme. Pass `people` (uid → name of active scholars) for the form's "Requested
+by" picker.
+
+### Add Job form
+
+The **+** button opens `showJobForm` (`lib/src/ui/job_form.dart`), and the
+**Edit** button opens the same form pre-filled:
+
+- **Name \*** and **Requested by \*** (a searchable scholar picker, starting
+  as the signed-in person).
+- **Due date \*** (MM/DD/YYYY with a calendar) and **Priority** (None, Low,
+  Medium or High).
+- **Parts required \*:** a box with + that opens a searchable inventory picker
+  (name, part #, location, stock, photo). Each part gets − / + for quantity,
+  shows how many are on hand, and warns when there aren't enough to claim yet.
+- **Comments** become the job's first comment (new jobs only).
+
+Required fields are marked with a red *, and each one says what's missing if
+you submit without it. Once a job is claimed, the parts list is locked when
+editing. On phones the form is full screen with Submit pinned to the bottom.
+
+The job popup comes next. Until it exists, clicking a job calls `onOpenJob`
+or shows a short note.
+
+The search, sorting and Log sentences are plain functions in
+`lib/src/ui/page_logic.dart`.
+
+### Preview
+
+`preview/` is a small web app that shows the page with lsicompapp's dark theme
+and sample data in memory, so it never touches Firebase. Use the "Signed in as"
+menu to switch between an admin and scholars.
+
+```
+cd preview
+flutter run -d chrome
+```
+
 ## Layout
 
 ```
@@ -109,6 +162,8 @@ lib/lsi_ticketing.dart          exports for the app
 lib/src/models/                 Job, JobLine, InventoryItem, HistoryEntry, Comment, enums
 lib/src/rules/permissions.dart  who-can-do-what (mirrors the security rules)
 lib/src/data/                   TicketingRepository + RTDB and in-memory stores
+lib/src/ui/                     the main page, the Add Job form, and search/sort/log logic
+preview/                        web app showing the page with sample data
 tool/rules_source.dart          source for the security rules
 rules/ticketing.rules.json      generated security rules
 tool/export_rule_fixtures.dart  records the repository's writes for the emulator tests

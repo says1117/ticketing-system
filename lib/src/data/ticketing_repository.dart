@@ -96,6 +96,11 @@ class TicketingRepository {
   }
 
   Stream<List<Job>> watchJobs() => store.watch(jobsPath).map(jobsFrom);
+
+  // everything in the change log and every comment, live, for the Log tab.
+  // fine at trial size; past a few thousand rows this should page or limit.
+  Stream<List<HistoryEntry>> watchHistory() => store.watch(historyPath).map((raw) => historyFrom(asJsonMap(raw)));
+  Stream<List<Comment>> watchComments() => store.watch(commentsPath).map((raw) => commentsFrom(asJsonMap(raw)));
   Future<List<Job>> listJobs() async => jobsFrom(await store.read(jobsPath));
 
   // the whole inventory, for the part picker; the inventory page loads it the same way

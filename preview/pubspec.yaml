@@ -1,0 +1,25 @@
+name: ticketing_preview
+description: "Preview of the Ticketing page with sample data, outside lsicompapp. Nothing here touches Firebase."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  lsi_ticketing:
+    path: ..
+  # lsicompapp's themes and fonts, so the preview looks like the real app
+  css:
+    git:
+      url: https://github.com/LimbitlessSolutionsInc/css.git
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
