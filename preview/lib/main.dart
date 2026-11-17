@@ -57,6 +57,9 @@ Future<MemoryTicketingStore> sampleStore() async {
   await as('sam').claim(a.jobId);
   later(30);
   await as('kai').claim(a.jobId);
+  final note = await as('sam').addComment(a.jobId, 'Assembly started.');
+  later(5);
+  await as('sam').editComment(note.id, 'Assembly started. Check thumb alignment before completing.');
   later(200);
 
   final b = await as('ari').createJob(
@@ -104,6 +107,11 @@ Future<MemoryTicketingStore> sampleStore() async {
   await as('kai').complete(e.jobId);
   later(60);
   await as('lee').addComment(c.jobId, 'Right palm plates are short. Can someone check the next order?');
+  final cancelled = await as('ari').createJob(
+      jobName: 'Clinic spare arm – cancelled', requestedBy: 'ari', dueDate: inDays(7),
+      parts: {'-thumb': 1});
+  later(10);
+  await as('ari').cancel(cancelled.jobId);
   return store;
 }
 

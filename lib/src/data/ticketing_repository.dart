@@ -95,6 +95,14 @@ class TicketingRepository {
     return list;
   }
 
+  // a single job stays live while its popup is open, including deletion.
+  Stream<Job?> watchJob(String jobId) => store.watch('$jobsPath/$jobId').map(
+      (raw) => raw == null ? null : Job.fromJson(jobId, raw));
+
+  // same collection read as the Log tab; only this job's comments reach the popup.
+  Stream<List<Comment>> watchCommentsForJob(String jobId) => watchComments().map(
+      (comments) => comments.where((c) => c.jobId == jobId).toList());
+
   Stream<List<Job>> watchJobs() => store.watch(jobsPath).map(jobsFrom);
 
   // everything in the change log and every comment, live, for the Log tab.

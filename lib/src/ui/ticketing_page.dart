@@ -6,8 +6,7 @@
 // wide screens get tables, phones get cards with 44px tap targets.
 //
 // the + and Edit buttons open the job form (job_form.dart) unless onAddJob /
-// onEditJob are given. the job popup is a separate piece; until it exists the
-// page calls onOpenJob, or shows a short note.
+// onEditJob are given. job rows open the live popup unless onOpenJob is given.
 
 import 'dart:async';
 
@@ -24,6 +23,7 @@ import '../models/history_entry.dart';
 import '../models/job.dart';
 import '../rules/permissions.dart';
 import 'job_form.dart';
+import 'job_popup.dart';
 import 'page_logic.dart';
 
 class TicketingPage extends StatefulWidget {
@@ -152,7 +152,10 @@ class _TicketingPageState extends State<TicketingPage> {
   void _claim(Job j) => _run(j.jobId, () => repo.claim(j.jobId), 'Claimed ${j.jobId}. Its parts were taken from inventory.');
 
   void _openJob(Job j) =>
-      widget.onOpenJob != null ? widget.onOpenJob!(j.jobId) : _note('The job popup for ${j.jobId} comes next.');
+      widget.onOpenJob != null
+          ? widget.onOpenJob!(j.jobId)
+          : showJobPopup(context, repository: repo, nameOf: widget.nameOf,
+              people: widget.people, jobId: j.jobId, onEditJob: widget.onEditJob);
 
   Future<void> _addJob() async {
     if (widget.onAddJob != null) return widget.onAddJob!();

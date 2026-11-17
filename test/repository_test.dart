@@ -59,6 +59,43 @@ void main() {
   });
   tearDown(() => store.dispose());
 
+  group('popup streams', () {
+    test('watchJob emits the initial value, updates and deletion', () async {
+      final job = await armJob();
+      final events = <Job?>[];
+      final subscription = repo(requester).watchJob(job.jobId).listen(events.add);
+      await Future<void>.delayed(Duration.zero);
+      await repo(maker).claim(job.jobId);
+      await Future<void>.delayed(Duration.zero);
+      await store.update({'ticketing/jobs/${job.jobId}': null});
+      await Future<void>.delayed(Duration.zero);
+      expect(events.first!.status, JobStatus.requested);
+      expect(events.any((j) => j?.status == JobStatus.inProgress), isTrue);
+      expect(events.last, isNull);
+      await subscription.cancel();
+    });
+
+    test('watchCommentsForJob filters other jobs and reflects edits and deletes', () async {
+      final job = await armJob();
+      final other = await armJob();
+      final events = <List<Comment>>[];
+      final subscription = repo(requester).watchCommentsForJob(job.jobId).listen(events.add);
+      await Future<void>.delayed(Duration.zero);
+      expect(events.single, isEmpty);
+      await repo(requester).addComment(other.jobId, 'Other job');
+      final comment = await repo(requester).addComment(job.jobId, 'First');
+      await Future<void>.delayed(Duration.zero);
+      expect(events.last.single.text, 'First');
+      await repo(requester).editComment(comment.id, 'Edited');
+      await Future<void>.delayed(Duration.zero);
+      expect(events.last.single.text, 'Edited');
+      await repo(requester).deleteComment(comment.id);
+      await Future<void>.delayed(Duration.zero);
+      expect(events.last, isEmpty);
+      await subscription.cancel();
+    });
+  });
+
   group('submit a job', () {
     test('saves name, requester, due date, parts and status, with a history row', () async {
       final j = await armJob();

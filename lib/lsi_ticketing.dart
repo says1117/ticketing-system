@@ -15,3 +15,4 @@ export 'src/rules/permissions.dart';
 export 'src/ui/page_logic.dart';
 export 'src/ui/ticketing_page.dart';
 export 'src/ui/job_form.dart';
+export 'src/ui/job_popup.dart';

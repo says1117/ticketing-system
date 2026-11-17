@@ -9,3 +9,6 @@ existing_parts.json
 # rules_test
 rules_test/node_modules/
 rules_test/*.log
+
+.impeccable.md
+.HANDOFF.md

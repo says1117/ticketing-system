@@ -1,7 +1,7 @@
 # lsi_ticketing
 
 Data layer for the Ticketing page: **assembly jobs** for bionic arms that
-reserve parts from lsicompapp's inventory. There are no screens yet. It's built
+reserve parts from lsicompapp's inventory. It includes the main page, job form, and live job popup. It's built
 as its own package so it can be dropped into lsicompapp later.
 
 ## Where the data lives
@@ -138,8 +138,14 @@ Required fields are marked with a red *, and each one says what's missing if
 you submit without it. Once a job is claimed, the parts list is locked when
 editing. On phones the form is full screen with Submit pinned to the bottom.
 
-The job popup comes next. Until it exists, clicking a job calls `onOpenJob`
-or shows a short note.
+Clicking a job opens `showJobPopup` by default; `onOpenJob` can override it.
+The popup watches the job, comments and inventory, shows part photos and
+locations, and supports claim, unclaim, edit, complete, cancel and comment
+add/edit/delete using the existing repository permissions. Below 900 px it is
+full screen with job actions pinned at the bottom; wider screens use a 620 px
+dialog. Remake links open the related job and remake details show used parts
+and defects. `onCreateRemake` connects the Part 2 form; until supplied,
+Create remake is disabled with an explanatory tooltip.
 
 The search, sorting and Log sentences are plain functions in
 `lib/src/ui/page_logic.dart`.
