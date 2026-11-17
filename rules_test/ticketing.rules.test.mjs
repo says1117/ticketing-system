@@ -39,6 +39,7 @@ const USERS = {
   qa: { active: true, status: 'OrgStatus.assistant', department: 'Quality' },
   prod: { active: true, status: 'OrgStatus.assistant', department: 'R&D', subDepartments: 'Production' },
   asm: { active: true, status: 'OrgStatus.assistant', department: 'Assembly' },
+  mfg: { active: true, status: 'OrgStatus.assistant', department: 'Finishing', subDepartments: 'Manufacturing' },
   lead: { active: true, status: 'OrgStatus.affiliatedFaculty', department: 'Staff' },
   other: { active: true, status: 'OrgStatus.assistant', department: 'Finishing', otherDepartments: { '-a': 'Quality' } },
   gone: { active: false, status: 'OrgStatus.assistant', department: 'Manufacturing' },
@@ -230,7 +231,7 @@ describe('claiming takes stock', () => {
     await setAdmin(`inventory/${FT}/stock`, 20); // the inventory page receives stock meanwhile
     await assertFails(write('man', update));
   });
-  test('in progress needs a claimer, and only an admin adds someone else', async () => {
+  test('in progress needs a claimer, and the first claim is in your own name', async () => {
     await assertFails(write('man', await jobWrite('man', 'JOB-0001', (j) => { j.status = 'inProgress'; })));
     const forOther = await claimWrite('man', 'JOB-0001');
     forOther['ticketing/jobs/JOB-0001'].claimers = { man2: now() };
@@ -248,6 +249,22 @@ describe('working, leaving and finishing', () => {
   // JOB-0001 in progress, claimed by man and man2; holds 5 / 1 / 2
   beforeEach(async () => replay('requester edits the name while in progress'));
 
+  test('a claimer adds an active scholar without touching stock', async () => {
+    await assertSucceeds(write('man', await jobWrite('man', 'JOB-0001', (j) => { j.claimers.qa = now(); }, { history: { type: 'claimed', to: 'qa' } })));
+    await assertSucceeds(write('adm', await jobWrite('adm', 'JOB-0001', (j) => { j.claimers.lead = now(); }, { history: { type: 'claimed', to: 'lead' } })));
+  });
+  test('only claimers or an admin add others, and never an inactive or unknown user', async () => {
+    const add = (uid, who) => jobWrite(uid, 'JOB-0001', (j) => { j.claimers[who] = now(); }, { history: { type: 'claimed', to: who } });
+    await assertFails(write('qa', await add('qa', 'lead')));
+    await assertFails(write('req', await add('req', 'qa')));
+    await assertFails(write('man', await add('man', 'gone')));
+    await assertFails(write('man', await add('man', 'nobody')));
+    await assertFails(write('adm', await add('adm', 'gone')));
+  });
+  test('adding someone cannot also take stock', async () => {
+    await assertFails(write('man', await jobWrite('man', 'JOB-0001', (j) => { j.claimers.qa = now(); },
+      { stock: { [FT]: (await stockOf(FT)) - 1 }, history: { type: 'claimed', to: 'qa' } })));
+  });
   test('the last claimer cannot leave without giving the parts back', async () => {
     await write('man2', await jobWrite('man2', 'JOB-0001', (j) => { delete j.claimers.man2; }, { history: { type: 'unclaimed' } }));
     await assertFails(write('man', await jobWrite('man', 'JOB-0001', (j) => {
@@ -393,13 +410,14 @@ describe('comments', () => {
   // JOB-0001 claimed by man and man2, requested by req
   beforeEach(async () => replay('requester edits the name while in progress'));
 
-  test('admins, the requester, every claimer, and Quality, Production and Assembly (control)', async () => {
-    for (const uid of ['adm', 'req', 'man', 'man2', 'qa', 'prod', 'asm']) {
+  test('admins, the requester, every claimer, and Quality, Production and Manufacturing (control)', async () => {
+    for (const uid of ['adm', 'req', 'man', 'man2', 'qa', 'prod', 'mfg']) {
       await assertSucceeds(write(uid, comment(uid)));
     }
   });
   test('anyone else is refused, including otherDepartments-only members', async () => {
-    for (const uid of ['other', 'lead']) {
+    // asm: lsicompapp has no Assembly department, so the name grants nothing
+    for (const uid of ['other', 'lead', 'asm']) {
       await assertFails(write(uid, comment(uid)));
     }
   });

@@ -24,7 +24,7 @@ String _org(String field) => "root.child('users/' + auth.uid + '/orgData/$field'
 final _active = "$_signedIn && ${_org('active')} === true";
 final _isAdmin = "${_org('status')} === 'OrgStatus.admin'";
 
-// in Quality, Assembly or Production (Permissions.commentDepartments), by
+// in Quality, Manufacturing or Production (Permissions.commentDepartments), by
 // department or subDepartments
 String _inDept() => [
       for (final field in ['department', 'subDepartments'])
@@ -172,9 +172,12 @@ Map<String, Object> _jobs() {
       'submittedBy': _v('newData.isString()'),
       'priority': _v('newData.isString() && newData.val().matches(${_regex(JobPriority.values.map((e) => e.name))})'),
       'lines': {'\$itemId': _line()},
-      // uid -> when they claimed. nobody but an admin adds someone else.
+      // uid -> when they claimed. you can add yourself; an admin or someone
+      // already claiming this job can add another active scholar.
       'claimers': {
-        '\$uid': _v("newData.isString() && (newData.val() === data.val() || \$uid === auth.uid || $_isAdmin)"),
+        '\$uid': _v("newData.isString() && (newData.val() === data.val() || \$uid === auth.uid || "
+            "(($_isAdmin || data.parent().child(auth.uid).exists()) && "
+            "root.child('users/' + \$uid + '/orgData/active').val() === true))"),
       },
       'status': _v('newData.isString() && newData.val().matches(${_regex(JobStatus.values.map((e) => e.name))})'),
       'neededBy': _v("newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}\$/)"),

@@ -130,6 +130,7 @@ Future<List<Map<String, Object?>>> recordWrites() async {
   await as('man', 'claim before the admin steps in', (r) => r.claim(extra.jobId));
   await as('adm', 'admin unclaims someone else, returning parts', (r) => r.unclaim(extra.jobId, claimerUid: 'man'));
   await as('man2', 'claim again', (r) => r.claim(extra.jobId));
+  await as('man2', 'a claimer adds another scholar to the job', (r) => r.addClaimer(extra.jobId, 'qa'));
   await as('adm', 'admin cancels an in-progress job, returning parts', (r) => r.cancel(extra.jobId));
   await as('adm', 'admin deletes someone else\'s comment', (r) async {
     final comments = await r.commentsForJob(arm.jobId);

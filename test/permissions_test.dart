@@ -75,6 +75,20 @@ void main() {
     });
   });
 
+  group('add claimer', () {
+    test('a claimer or an admin adds another scholar to an in-progress job', () {
+      final j = inProgress();
+      expect(Permissions.canAddClaimer(maker, j, 'qa'), isNull);
+      expect(Permissions.canAddClaimer(admin, j, 'qa'), isNull);
+    });
+    test('not someone off the job, not twice, not before a claim or after closing', () {
+      expect(Permissions.canAddClaimer(requester, inProgress(), 'qa'), contains('Only people who claimed'));
+      expect(Permissions.canAddClaimer(maker, inProgress(by: ['man', 'qa']), 'qa'), contains('already on'));
+      expect(Permissions.canAddClaimer(admin, job(), 'qa'), contains('Claim the job'));
+      expect(Permissions.canAddClaimer(admin, job(status: JobStatus.completed), 'qa'), isNotNull);
+    });
+  });
+
   group('working a job', () {
     test('only claimers and admins complete, and only while in progress', () {
       final j = inProgress();
@@ -126,14 +140,16 @@ void main() {
   });
 
   group('comments', () {
-    test('admins, the requester, every claimer, and Quality, Assembly or Production', () {
+    test('admins, the requester, every claimer, and Quality, Manufacturing or Production', () {
       final j = inProgress(by: ['man', 'man2']);
       for (final u in [admin, requester, maker, const TicketingUser(uid: 'man2', role: Role.member)]) {
         expect(Permissions.canComment(u, j), isNull, reason: u.uid);
       }
-      for (final dep in ['Quality', 'Assembly', 'Production']) {
+      for (final dep in ['Quality', 'Manufacturing', 'Production']) {
         expect(Permissions.canComment(TicketingUser(uid: 'x', role: Role.member, departments: {dep}), j), isNull, reason: dep);
       }
+      // lsicompapp has no Assembly department; the name grants nothing
+      expect(Permissions.canComment(const TicketingUser(uid: 'x', role: Role.member, departments: {'Assembly'}), j), isNotNull);
     });
     test('anyone else is refused', () {
       expect(Permissions.canComment(someoneElse, inProgress()), isNotNull);

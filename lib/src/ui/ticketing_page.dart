@@ -415,6 +415,15 @@ class _TicketingPageState extends State<TicketingPage> {
 
   // ---------------------------------------------------------------- shared bits
 
+  Widget _statusCell(Job j) {
+    final today = (widget.today ?? DateTime.now)();
+    final overdue = PageLogic.isOverdue(j, today);
+    return Text(PageLogic.jobStatusText(j, today),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: overdue ? _cellStyle.copyWith(color: Colors.redAccent, fontWeight: FontWeight.w600) : _cellStyle);
+  }
+
   // name on top; id, Remake label and due date underneath
   Widget _jobNameCell(Job j) {
     final today = (widget.today ?? DateTime.now)();
@@ -611,7 +620,7 @@ class _TicketingPageState extends State<TicketingPage> {
         ],
         cells: (j) => [
           _jobNameCell(j),
-          _text(PageLogic.statusLabel(j.status)),
+          _statusCell(j),
           _text(_time(j.createdAt)),
           Tooltip(message: 'Claimed by ${PageLogic.claimersText(j, widget.nameOf)}', child: _text(_time(j.claimedAt))),
           _text(widget.nameOf(j.requestedBy)),

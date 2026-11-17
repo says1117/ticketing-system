@@ -15,7 +15,7 @@ phone photos, so downscale before viewing:
 
 ## 1. Where things stand
 
-**Built and tested (93 Dart tests, 42 Firebase emulator tests):**
+**Built and tested (148 Dart tests, 45 Firebase emulator tests):**
 
 | Piece | Files |
 | --- | --- |
@@ -24,12 +24,14 @@ phone photos, so downscale before viewing:
 | Realtime Database security rules (generated) | `tool/rules_source.dart` → `rules/ticketing.rules.json` |
 | Main page: search, In-Progress / Requested / Log tabs, sort, Claim, Unclaim | `lib/src/ui/ticketing_page.dart`, `lib/src/ui/page_logic.dart` |
 | Add Job form, also used for Edit | `lib/src/ui/job_form.dart` |
+| Job popup (Part 1), live, opens by default on click | `lib/src/ui/job_popup.dart` |
+| Remake form (Part 2), opened from the popup | `lib/src/ui/remake_form.dart`, `remake_logic.dart`, `form_fields.dart` |
 | Preview web app with sample data | `preview/` |
 
 **Not built yet, in order:**
 
-1. Job popup: what you see when you click a job.
-2. Remake ("failure") form, opened from the popup.
+1. ~~Job popup~~ (done, uncommitted, awaiting owner review).
+2. ~~Remake ("failure") form~~ (done, uncommitted, awaiting owner review).
 3. Log popup: what you see when you click a Log entry.
 4. Integration into lsicompapp.
 5. Deployment prerequisites.
@@ -84,7 +86,7 @@ code themselves.
 - **Requester or submitter** can edit or cancel their open job. The parts
   list only changes before a claim.
 - **Comments:** admins, the requester and submitter, every claimer, and the
-  Quality, Assembly and Production departments (`department` or
+  Quality, Manufacturing and Production departments (`department` or
   `subDepartments`; `otherDepartments` is ignored because the security rules
   can't search it). Authors edit their own comments; authors and admins can
   delete them.
@@ -228,6 +230,17 @@ Opened from the popup's **Create remake**. Mockup `Ticketing #4` top right,
 **Acceptance:** widget tests for both outcomes (claimed / waiting), the
 validation messages, and that the original shows as Remade → Log "Failed".
 
+**Build steps** (agreed with the owner; review after each):
+1. ~~Form rules in plain Dart: `lib/src/ui/remake_logic.dart` + tests.~~ Done.
+2. ~~Move the requester / due date / priority pickers out of `JobForm` to share
+   (`lib/src/ui/form_fields.dart`).~~ Done.
+3. ~~Form shell: `showRemakeForm` (`lib/src/ui/remake_form.dart`) with the
+   job's details pre-filled; the popup's Create remake opens it.~~ Done.
+4. ~~Faulty parts section: checkbox per part, count stepper, reason.~~ Done.
+5. ~~Comment, validation messages, Submit → `createRemake`.~~ Done.
+6. ~~Result message; popup's Create remake opens the form, then the new remake.~~ Done.
+7. ~~Widget tests, preview sample data, README/HANDOFF.~~ Done.
+
 ---
 
 ## 6. Part 3: Log popup
@@ -265,16 +278,19 @@ that one).
    - `TicketingUser.fromOrgData(currentUser.uid, userData['orgData'])`
      (null → "no access" message).
    - `RtdbTicketingStore(FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: 'https://limbitless-solutions-team.firebaseio.com/'))`.
-     In `DevAuthWrapper.isDev`, use `MemoryTicketingStore({...})` with some
-     inventory instead.
+     In `DevAuthWrapper.isDev`, use `MemoryTicketingStore` loaded from a fake
+     JSON file instead (supervisor, 2026-11-17: don't connect to Firebase in
+     development). The file has the same shape as the database:
+     `inventory/{id}` items and optionally `ticketing/...` and `users/...`.
+     Writes stay in memory and reset on reload.
    - `nameOf: (uid) => usersProfile[uid]?['displayName'] ?? 'Unknown'`.
    - `people`: active users from `usersProfile`. Check how lsicompapp decides
      "active"; `allUsersData` is only loaded for admins.
 3. Register it:
    - a route in `lib/start_pages/LSIapp_home.dart` (next to `'/shaKeys'`),
    - an `AppScreens` value in `lib/styles/globals.dart`,
-   - a nav tile in `lib/src/navigation/navigation.dart`. Ask the owner which
-     menu group.
+   - a nav tile named **Ticketing** in the **Engine** group of
+     `lib/src/navigation/navigation.dart`.
 4. Wrap the page in `PopScope` like the SHA Keys page, so back goes to main.
 5. Do **not** change the inventory page.
 
@@ -316,25 +332,24 @@ Fix the top issues before a wider rollout.
 
 ---
 
-## 10. Open questions (ask the owner)
+## 10. Owner decisions (2026-11-17) and remaining questions
 
-- **Q1.** The mockup says "Claimed by is a scholar dropdown that can add
-  multiple". Today only **admins** can add someone else as a claimer (rules
-  and `Permissions`); members can only add themselves. Should claimers be able
-  to add teammates? If yes, update `tool/rules_source.dart` (the `claimers`
-  validate), `Permissions`, and add an `addClaimer` repository method with
-  tests.
-- **Q2.** Sort options: the page has due date, priority, time requested, time
-  claimed and job name. Confirm these are right.
-- **Q3.** The mockup's In-Progress "Status" column always reads "In
-  progress". Should it show something more useful (e.g. overdue, or waiting
-  on parts)?
-- **Q4.** lsicompapp has no "Assembly" department value. It's allowed by name
-  in the comment and remake rules. Which department name does the assembly
-  team actually use?
-- **Q5.** Which nav menu group the page belongs in, and what to name it.
-
----
+- **Q1, done.** Claimers (and admins) can add other active scholars to an
+  in-progress job: `Permissions.canAddClaimer`, `addClaimer` in the
+  repository, the `claimers` rule, and "Add scholar" in the popup. Adding
+  someone takes no stock (confirmed by the owner).
+- **Q2, confirmed.** Current sorts: In-Progress = due date (default), time claimed,
+  time requested, priority, job name. Requested = due date (default),
+  priority, time requested, job name. Keep as is.
+- **Q3, done.** The In-Progress "Status" column shows **Overdue** when
+  `neededBy` is before today, otherwise "In progress".
+- **Q4, done.** lsicompapp's department names (`Org.depCheck`): Computer
+  Science, Digital Design, Engineering, Electrical, Game Design, Studio Art,
+  Research, R&D, Manufacturing, Production, Web Design, Finishing,
+  OPAL/Outreach/Advocacy, Quality, REU. **Done:** the assembly team is
+  Manufacturing, so comment/remake access is Quality, Manufacturing and
+  Production.
+- **Q5, decided.** Page name **Ticketing**, in the **Engine** nav group.
 
 ## 11. How to work in this repo
 

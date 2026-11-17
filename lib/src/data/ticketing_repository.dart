@@ -352,6 +352,22 @@ class TicketingRepository {
         return next;
       });
 
+  // a claimer (or an admin) adds another scholar to an in-progress job. the
+  // parts were already taken by the first claim, so no stock changes. the
+  // history row is a claim made by the adder for uid.
+  Future<Job> addClaimer(String jobId, String uid) async {
+    final who = uid.trim();
+    if (who.isEmpty) throw TicketingException('Choose a scholar to add.');
+    return _retrying(() async {
+      final j = await _requireJob(jobId);
+      _check(Permissions.canAddClaimer(user, j, who));
+      final rows = [_history(HistoryType.claimed, j, to: who)];
+      final next = _next(j.copyWith(claimers: {...j.claimers, who: _now}), rows);
+      await store.update(_save(next, rows));
+      return next;
+    });
+  }
+
   // a claimer leaves (claimerUid defaults to the signed-in user; admins can
   // remove anyone). when the last claimer leaves, the job goes back to
   // requested and everything it holds goes back to inventory.

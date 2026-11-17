@@ -90,17 +90,18 @@ Worked out from `users/{uid}/orgData` (what root_page.dart already loads):
 - **The requester** (the person it's for, or whoever submitted it for them) can
   edit their open job (name, requester, due date and priority any time; the
   parts list only before a claim) or cancel it.
-- **A claimer** can unclaim themselves and complete the job.
+- **A claimer** can unclaim themselves, complete the job, and add other active
+  scholars to it ("Add scholar" in the popup). Adding someone takes no stock;
+  the added scholar can unclaim themselves like any claimer.
 - **Create remake:** anyone who can comment on the job (below).
 - **Comments:** admins, the requester and submitter, every claimer, and members of the
-  Quality, Assembly and Production departments (`department` or
+  Quality, Manufacturing and Production departments (`department` or
   `subDepartments`). Authors can edit their comments. Authors and admins can
   delete them.
 
 Inactive users (`orgData.active != true`) can't read or write anything.
 `otherDepartments` is ignored, because security rules can't search it.
-lsicompapp has no Assembly department today; it's allowed by name so it works
-once one exists.
+The assembly team is Manufacturing; lsicompapp has no Assembly department.
 
 ## The main page
 
@@ -110,6 +111,7 @@ once one exists.
   Sort by dropdown on the right.
 - **In-Progress:** Job Name | Status | Time Requested | Time Claimed |
   Requested By | Edit | Unclaim.
+  Status reads **Overdue** (in red) once the due date has passed.
 - **Requested:** Job Name | Requested By | Priority | Date Requested | Claim.
 - **Log:** an activity feed with All / Completed / Failed filters (Failed means
   remade).
@@ -144,8 +146,18 @@ locations, and supports claim, unclaim, edit, complete, cancel and comment
 add/edit/delete using the existing repository permissions. Below 900 px it is
 full screen with job actions pinned at the bottom; wider screens use a 620 px
 dialog. Remake links open the related job and remake details show used parts
-and defects. `onCreateRemake` connects the Part 2 form; until supplied,
-Create remake is disabled with an explanatory tooltip.
+and defects.
+
+**Create remake** opens the remake form (`showRemakeForm`,
+`lib/src/ui/remake_form.dart`); `onCreateRemake` replaces it. The form starts
+with the job's name, requester, due date and priority (all editable), lists the
+job's parts to tick as faulty with a count (1 up to what the job holds) and an
+optional reason, and takes an optional comment. Saving calls `createRemake`,
+then closes the failed job's popup and opens the remake's with the result:
+claimed by you (replacements taken from inventory), or waiting in Requested
+with the short parts named. The form's rules are plain Dart in
+`lib/src/ui/remake_logic.dart`; the requester, due date and priority fields are
+shared with the job form through `lib/src/ui/form_fields.dart`.
 
 The search, sorting and Log sentences are plain functions in
 `lib/src/ui/page_logic.dart`.

@@ -60,6 +60,10 @@ class PageLogic {
         JobPriority.high => 'High',
       };
 
+  // the In-Progress Status column: Overdue once the due date has passed
+  static String jobStatusText(Job j, DateTime today) =>
+      isOverdue(j, today) ? 'Overdue' : statusLabel(j.status);
+
   // past its due date and not finished. today is the local calendar day.
   static bool isOverdue(Job j, DateTime today) {
     final day = DateTime.utc(today.year, today.month, today.day);

@@ -31,22 +31,23 @@ class TicketingUser {
 //   anyone active:   request a job; claim any open job (join if already claimed)
 //   the requester:   (the person it's for, or who submitted it) edit or cancel
 //                    their open job; parts only before a claim
-//   a claimer:       unclaim themselves, complete
+//   a claimer:       unclaim themselves, complete, add other active scholars
+//                    to the job (adding takes no stock)
 //   remakes:         on an in-progress or completed job, the same people who
 //                    can comment (below) can report defects, which creates a
 //                    remake ticket and closes the job as remade
 //   admins:          everything, including unclaiming anyone
 //   comments:        admins, the requester and submitter, every claimer, and the Quality,
-//                    Assembly and Production departments
+//                    Manufacturing and Production departments
 //
 // the can... methods return a message for the user, or null when allowed.
 class Permissions {
   static const String adminStatus = 'OrgStatus.admin';
 
   // departments whose members may comment on any job. names as stored in
-  // orgData.department (see Org.getDEP in lsicompapp). lsicompapp has no
-  // Assembly department today; it's listed so it works once one exists.
-  static const Set<String> commentDepartments = {'Quality', 'Assembly', 'Production'};
+  // orgData.department (see Org.depCheck in lsicompapp). the assembly team is
+  // Manufacturing; lsicompapp has no Assembly department.
+  static const Set<String> commentDepartments = {'Quality', 'Manufacturing', 'Production'};
 
   // OrgStatus.admin is an admin, every other active user is a member. null
   // for an inactive user.
@@ -100,6 +101,17 @@ class Permissions {
     return null;
   }
 
+  // a claimer (or an admin) brings another scholar onto an in-progress job.
+  // only the first claim takes parts, so adding someone changes no stock.
+  static String? canAddClaimer(TicketingUser user, Job j, String uid) {
+    final closed = _closedReason(j);
+    if (closed != null) return closed;
+    if (j.status != JobStatus.inProgress) return 'Claim the job before adding other scholars.';
+    if (!_claimerOrAdmin(user, j)) return 'Only people who claimed this job, or an admin, can add scholars to it.';
+    if (j.isClaimedBy(uid)) return 'That person is already on this job.';
+    return null;
+  }
+
   static String? canComplete(TicketingUser user, Job j) {
     if (j.status != JobStatus.inProgress) return 'Only a job in progress can be completed.';
     if (!_claimerOrAdmin(user, j)) return 'Only people who claimed this job, or an admin, can complete it.';
@@ -131,7 +143,7 @@ class Permissions {
       return 'A remake can be made from a job that is in progress or completed.';
     }
     if (_mayComment(user, j)) return null;
-    return 'Only people on this job, admins, and the Quality, Assembly and Production teams can create a remake.';
+    return 'Only people on this job, admins, and the Quality, Manufacturing and Production teams can create a remake.';
   }
 
   static bool _mayComment(TicketingUser user, Job j) =>
@@ -142,7 +154,7 @@ class Permissions {
 
   static String? canComment(TicketingUser user, Job j) {
     if (_mayComment(user, j)) return null;
-    return 'Only people on this job, admins, and the Quality, Assembly and Production teams can comment here.';
+    return 'Only people on this job, admins, and the Quality, Manufacturing and Production teams can comment here.';
   }
 
   static String? canEditComment(TicketingUser user, Comment c) =>

@@ -213,6 +213,32 @@ void main() {
     expect((await as(admin).getInventoryItem('tip'))!.stock, 10);
   });
 
+  testWidgets('a claimer adds a teammate from the searchable scholar list',
+      (tester) async {
+    final job = await create();
+    await as(claimer).claim(job.jobId);
+    await open(tester, claimer, job.jobId);
+    await tap(tester, 'popup-add-claimer');
+    // claimers already on the job aren't offered
+    expect(find.byKey(const Key('popup-add-claimer-maker')), findsNothing);
+    await tester.enterText(
+        find.byKey(const Key('popup-add-claimer-search')), 'mor');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('popup-add-claimer-req')), findsNothing);
+    await tap(tester, 'popup-add-claimer-qa');
+    expect(find.text('Added Morgan to the job.'), findsOneWidget);
+    expect((await as(admin).getJob(job.jobId))!.claimers.keys,
+        containsAll(['maker', 'qa']));
+    expect((await as(admin).getInventoryItem('tip'))!.stock, 8);
+  });
+
+  testWidgets('only claimers and admins see Add scholar', (tester) async {
+    final job = await create();
+    await as(claimer).claim(job.jobId);
+    await open(tester, requester, job.jobId);
+    expect(find.byKey(const Key('popup-add-claimer')), findsNothing);
+  });
+
   testWidgets('complete confirms and retains reserved stock', (tester) async {
     final job = await create();
     await as(claimer).claim(job.jobId);

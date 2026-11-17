@@ -14,13 +14,13 @@
 // lsicompapp imports material.dart in all of its pages; staying consistent.
 // ignore: deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../data/ticketing_repository.dart';
 import '../models/enums.dart';
 import '../models/inventory_item.dart';
 import '../models/job.dart';
 import '../rules/permissions.dart';
+import 'form_fields.dart';
 import 'page_logic.dart';
 
 Future<Job?> showJobForm(
@@ -120,19 +120,13 @@ class _JobFormState extends State<JobForm> {
 
   // ---------------------------------------------------------------- styles
 
-  ThemeData get _theme => Theme.of(context);
-  Color get _accent => _theme.secondaryHeaderColor;
-  TextStyle get _text =>
-      (_theme.primaryTextTheme.bodyMedium ?? _theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(fontSize: 14);
-  TextStyle get _muted => _text.copyWith(color: _theme.hintColor, fontSize: 13);
-  static const Color _errorColor = Colors.redAccent;
-
-  // "Name *" with a red star
-  Widget _label(String text, {bool required = false}) => Text.rich(TextSpan(
-        text: text,
-        style: _text.copyWith(fontWeight: FontWeight.w600),
-        children: [if (required) const TextSpan(text: ' *', style: TextStyle(color: _errorColor))],
-      ));
+  // shared with the remake form (form_fields.dart)
+  FormStyle get _style => FormStyle.of(context);
+  ThemeData get _theme => _style.theme;
+  Color get _accent => _style.accent;
+  TextStyle get _text => _style.text;
+  TextStyle get _muted => _style.muted;
+  static const Color _errorColor = FormStyle.error;
 
   // ---------------------------------------------------------------- validation
 
@@ -179,22 +173,6 @@ class _JobFormState extends State<JobForm> {
     }
   }
 
-  Future<void> _pickDate() async {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final current = _due == null ? null : DateTime(_due!.year, _due!.month, _due!.day);
-    final first = current != null && current.isBefore(today) ? current : today;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: current ?? today,
-      firstDate: first,
-      lastDate: DateTime(today.year + 3),
-      helpText: 'Due date',
-    );
-    // stored as a calendar day (UTC midnight), the same way the job model reads it
-    if (picked != null) setState(() => _due = DateTime.utc(picked.year, picked.month, picked.day));
-  }
-
   Future<void> _addParts() async {
     final picked = await showDialog<String>(
       context: context,
@@ -224,9 +202,21 @@ class _JobFormState extends State<JobForm> {
           ),
           onChanged: (_) => setState(() {}),
         )),
-        _field('Requested by', required: true, child: _requesterPicker()),
-        _field('Due date', required: true, error: _tried ? _dueError : null, child: _dateField()),
-        _field('Priority', child: _priorityPicker()),
+        _field('Requested by', required: true, child: RequesterPicker(
+          people: widget.people,
+          nameOf: widget.nameOf,
+          me: repo.user.uid,
+          value: _requestedBy,
+          onChanged: (v) => setState(() => _requestedBy = v),
+        )),
+        _field('Due date', required: true, error: _tried ? _dueError : null, child: DueDateField(
+          value: _due,
+          onChanged: (v) => setState(() => _due = v),
+        )),
+        _field('Priority', child: PriorityPicker(
+          value: _priority,
+          onChanged: (v) => setState(() => _priority = v),
+        )),
         _field('Parts required', required: true, error: _tried ? _partsError : null, child: _partsBox()),
         if (!editing)
           _field('Comments', child: TextField(
@@ -297,79 +287,8 @@ class _JobFormState extends State<JobForm> {
     );
   }
 
-  Widget _field(String label, {required Widget child, bool required = false, String? error}) => Padding(
-        padding: const EdgeInsets.only(top: 14),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _label(label, required: required),
-          const SizedBox(height: 6),
-          child,
-          if (error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(error, style: _text.copyWith(color: _errorColor, fontSize: 12)),
-            ),
-        ]),
-      );
-
-  Widget _requesterPicker() {
-    final options = {
-      ...widget.people,
-      repo.user.uid: widget.people[repo.user.uid] ?? widget.nameOf(repo.user.uid),
-      _requestedBy: widget.people[_requestedBy] ?? widget.nameOf(_requestedBy),
-    };
-    final sorted = options.entries.toList()..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase()));
-    return LayoutBuilder(
-      builder: (context, box) => DropdownMenu<String>(
-        key: const Key('form-requester'),
-        width: box.maxWidth,
-        initialSelection: _requestedBy,
-        enableFilter: true,
-        requestFocusOnTap: true,
-        textStyle: _text,
-        menuHeight: 320,
-        inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder(), isDense: true),
-        dropdownMenuEntries: [
-          for (final e in sorted)
-            DropdownMenuEntry(value: e.key, label: e.key == repo.user.uid ? '${e.value} (you)' : e.value),
-        ],
-        onSelected: (v) => setState(() => _requestedBy = v ?? _requestedBy),
-      ),
-    );
-  }
-
-  Widget _dateField() => InkWell(
-        key: const Key('form-due'),
-        onTap: _pickDate,
-        borderRadius: BorderRadius.circular(4),
-        child: InputDecorator(
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            isDense: true,
-            suffixIcon: Icon(Icons.calendar_month_outlined),
-          ),
-          child: Text(
-            _due == null ? 'MM/DD/YYYY' : DateFormat('MM/dd/yyyy').format(_due!),
-            style: _due == null ? _muted : _text,
-          ),
-        ),
-      );
-
-  // a "None" choice plus Low / Medium / High. values are strings because a
-  // null menu value doesn't open reliably
-  Widget _priorityPicker() => LayoutBuilder(
-        builder: (context, box) => DropdownMenu<String>(
-          key: const Key('form-priority'),
-          width: box.maxWidth,
-          initialSelection: _priority?.name ?? 'none',
-          textStyle: _text,
-          inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder(), isDense: true),
-          dropdownMenuEntries: [
-            const DropdownMenuEntry(value: 'none', label: 'None'),
-            for (final p in JobPriority.values) DropdownMenuEntry(value: p.name, label: PageLogic.priorityLabel(p)),
-          ],
-          onSelected: (v) => setState(() => _priority = enumFromName(JobPriority.values, v)),
-        ),
-      );
+  Widget _field(String label, {required Widget child, bool required = false, String? error}) =>
+      LabeledField(label: label, required: required, error: error, child: child);
 
   // ---------------------------------------------------------------- parts
 

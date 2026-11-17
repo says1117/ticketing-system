@@ -227,6 +227,37 @@ void main() {
     });
   });
 
+  group('add claimer', () {
+    test('a claimer adds a teammate without taking more parts, logged as theirs', () async {
+      final j = await armJob();
+      await repo(maker).claim(j.jobId);
+      final added = await repo(maker).addClaimer(j.jobId, 'qa');
+      expect(added.claimers.keys, containsAll(['man', 'qa']));
+      expect(await stockOf(fingertip), 7);
+      final rows = await repo(admin).historyForJob(j.jobId);
+      expect(rows.last.type, HistoryType.claimed);
+      expect(rows.last.user, 'man');
+      expect(rows.last.to, 'qa');
+      await expectLogConsistent();
+    });
+    test('the added scholar can leave on their own; the job keeps its parts', () async {
+      final j = await armJob();
+      await repo(maker).claim(j.jobId);
+      await repo(maker).addClaimer(j.jobId, 'qa');
+      await repo(qa).unclaim(j.jobId);
+      expect((await repo(admin).getJob(j.jobId))!.claimers.keys, ['man']);
+      expect(await stockOf(fingertip), 7);
+    });
+    test('not by someone off the job, not before a claim, not twice', () async {
+      final j = await armJob();
+      await expectLater(repo(admin).addClaimer(j.jobId, 'qa'), throwsTicketing('Claim the job'));
+      await repo(maker).claim(j.jobId);
+      await expectLater(repo(outsider).addClaimer(j.jobId, 'qa'), throwsTicketing('Only people who claimed'));
+      await expectLater(repo(maker).addClaimer(j.jobId, 'man'), throwsTicketing('already on'));
+      await expectLater(repo(maker).addClaimer(j.jobId, ' '), throwsTicketing('Choose a scholar'));
+    });
+  });
+
   group('remakes', () {
     Future<Job> claimedArm() async {
       final j = await armJob(); // 5 fingertips, 1 palm
@@ -365,7 +396,9 @@ void main() {
   group('comments', () {
     test('admins, the requester, claimers and Quality can comment; others can\'t', () async {
       final j = await armJob();
-      await expectLater(repo(maker).addComment(j.jobId, 'hi'), throwsTicketing('Only people on this job'));
+      // Finishing isn't a commenting department, so they need to be on the job
+      const finishing = TicketingUser(uid: 'fin', role: Role.member, departments: {'Finishing'});
+      await expectLater(repo(finishing).addComment(j.jobId, 'hi'), throwsTicketing('Only people on this job'));
       await repo(maker).claim(j.jobId);
       await repo(maker2).claim(j.jobId);
       for (final u in [requester, maker, maker2, qa, admin]) {

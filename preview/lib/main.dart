@@ -107,6 +107,15 @@ Future<MemoryTicketingStore> sampleStore() async {
   await as('kai').complete(e.jobId);
   later(60);
   await as('lee').addComment(c.jobId, 'Right palm plates are short. Can someone check the next order?');
+  // holds the only right palm plate. a remake of that palm can't be claimed,
+  // so it shows the "waiting in Requested" result; remaking its thumb shows
+  // the "claimed" one.
+  final f = await as('sam').createJob(
+      jobName: 'Right hand – patient 77', requestedBy: 'lee', dueDate: inDays(4), priority: JobPriority.medium,
+      parts: {'-palmR': 1, '-thumb': 1});
+  later(15);
+  await as('sam').claim(f.jobId);
+  later(30);
   final cancelled = await as('ari').createJob(
       jobName: 'Clinic spare arm – cancelled', requestedBy: 'ari', dueDate: inDays(7),
       parts: {'-thumb': 1});

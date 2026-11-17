@@ -1429,6 +1429,44 @@
       }
     },
     {
+      "label": "a claimer adds another scholar to the job",
+      "user": "man2",
+      "update": {
+        "ticketing/jobs/JOB-0006": {
+          "jobId": "JOB-0006",
+          "jobName": "Extra fingertips",
+          "requestedBy": "req",
+          "submittedBy": "req",
+          "lines": {
+            "-invFingertip": {
+              "quantity": 1,
+              "held": 1,
+              "scrapped": 0
+            }
+          },
+          "claimers": {
+            "man2": "2026-11-12T10:20:00.000Z",
+            "qa": "2026-11-12T10:25:00.000Z"
+          },
+          "status": "inProgress",
+          "neededBy": "2026-11-30",
+          "priority": "low",
+          "createdAt": "2026-11-12T10:11:00.000Z",
+          "updatedAt": "2026-11-12T10:26:00.000Z",
+          "claimedAt": "2026-11-12T10:20:00.000Z",
+          "rev": 5,
+          "lastHistoryId": "-k00000049"
+        },
+        "ticketing/history/-k00000049": {
+          "jobId": "JOB-0006",
+          "type": "claimed",
+          "to": "qa",
+          "user": "man2",
+          "timestamp": "2026-11-12T10:24:00.000Z"
+        }
+      }
+    },
+    {
       "label": "admin cancels an in-progress job, returning parts",
       "user": "adm",
       "update": {
@@ -1445,18 +1483,19 @@
             }
           },
           "claimers": {
-            "man2": "2026-11-12T10:20:00.000Z"
+            "man2": "2026-11-12T10:20:00.000Z",
+            "qa": "2026-11-12T10:25:00.000Z"
           },
           "status": "cancelled",
           "neededBy": "2026-11-30",
           "priority": "low",
           "createdAt": "2026-11-12T10:11:00.000Z",
-          "updatedAt": "2026-11-12T10:26:00.000Z",
+          "updatedAt": "2026-11-12T10:29:00.000Z",
           "claimedAt": "2026-11-12T10:20:00.000Z",
-          "rev": 5,
-          "lastHistoryId": "-k00000050"
+          "rev": 6,
+          "lastHistoryId": "-k00000051"
         },
-        "ticketing/history/-k00000049": {
+        "ticketing/history/-k00000050": {
           "jobId": "JOB-0006",
           "itemId": "-invFingertip",
           "type": "returned",
@@ -1464,15 +1503,15 @@
           "to": "6",
           "quantityChange": 1,
           "user": "adm",
-          "timestamp": "2026-11-12T10:24:00.000Z"
+          "timestamp": "2026-11-12T10:27:00.000Z"
         },
-        "ticketing/history/-k00000050": {
+        "ticketing/history/-k00000051": {
           "jobId": "JOB-0006",
           "type": "cancelled",
           "from": "inProgress",
           "to": "cancelled",
           "user": "adm",
-          "timestamp": "2026-11-12T10:25:00.000Z"
+          "timestamp": "2026-11-12T10:28:00.000Z"
         },
         "inventory/-invFingertip/stock": 6
       }

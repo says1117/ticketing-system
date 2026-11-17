@@ -113,6 +113,30 @@ void main() {
     expect(find.text('No jobs have been completed yet.'), findsOneWidget);
   });
 
+  // part 2 end to end: row -> popup -> remake form -> remake popup -> Log
+  testWidgets('a remake made from the page closes the job as Failed in the Log', (tester) async {
+    await pumpPage(tester, sam);
+    await tester.tap(find.byKey(const Key('row-JOB-0001')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('popup-create-remake')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('remake-pick--tip')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('remake-submit')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('You claimed it'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('popup-close')));
+    await tester.pumpAndSettle();
+
+    // the remake replaced the original on In-Progress
+    expect(find.text('Remake'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tab-log')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('log-failed')));
+    await tester.pumpAndSettle();
+    expect(find.text('Sam Okafor marked JOB-0001 "Left arm" as failed (remake JOB-0004)'), findsOneWidget);
+  });
+
   testWidgets('phones get cards with labelled buttons', (tester) async {
     await pumpPage(tester, sam, size: const Size(390, 844));
     expect(find.text('Job Name'), findsNothing, reason: 'no table header on phones');

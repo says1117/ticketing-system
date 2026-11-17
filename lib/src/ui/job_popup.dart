@@ -15,6 +15,8 @@ import '../models/job.dart';
 import '../rules/permissions.dart';
 import 'job_form.dart';
 import 'page_logic.dart';
+import 'remake_form.dart';
+import 'remake_logic.dart';
 
 Future<void> showJobPopup(
   BuildContext context, {
@@ -24,6 +26,7 @@ Future<void> showJobPopup(
   Map<String, String> people = const {},
   void Function(Job)? onEditJob,
   Future<void> Function(Job)? onCreateRemake,
+  String notice = '',
 }) =>
     showDialog<void>(
       context: context,
@@ -35,7 +38,8 @@ Future<void> showJobPopup(
             jobId: jobId,
             people: people,
             onEditJob: onEditJob,
-            onCreateRemake: onCreateRemake);
+            onCreateRemake: onCreateRemake,
+            notice: notice);
         return phone
             ? Dialog.fullscreen(child: popup)
             : Dialog(
@@ -57,15 +61,18 @@ class JobPopup extends StatefulWidget {
       required this.jobId,
       this.people = const {},
       this.onEditJob,
-      this.onCreateRemake});
+      this.onCreateRemake,
+      this.notice = ''});
 
   final TicketingRepository repository;
   final NameOf nameOf;
   final String jobId;
   final Map<String, String> people;
   final void Function(Job)? onEditJob;
-  // part 2 supplies the remake form without changing this popup's permissions.
+  // replaces the built-in remake form; permissions still decide if it shows.
   final Future<void> Function(Job)? onCreateRemake;
+  // shown in the footer when the popup opens, e.g. the result of a remake
+  final String notice;
 
   @override
   State<JobPopup> createState() => _JobPopupState();
@@ -93,6 +100,7 @@ class _JobPopupState extends State<JobPopup> {
   @override
   void initState() {
     super.initState();
+    _notice = widget.notice;
     void error(Object _) {
       if (mounted) {
         setState(() => _error =
@@ -227,6 +235,55 @@ class _JobPopupState extends State<JobPopup> {
     await _unclaim(job, uid);
   }
 
+  // claimers bring teammates onto the job. people is every active scholar;
+  // there can be many, so the list is searchable.
+  Future<void> _addClaimer(Job job) async {
+    final choices = (widget.people.entries.where((e) => !job.isClaimedBy(e.key)).toList()
+      ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase())));
+    var query = '';
+    final picked = await showDialog<String>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+            builder: (context, setDialog) {
+              final shown = choices
+                  .where((e) => e.value.toLowerCase().contains(query.trim().toLowerCase()))
+                  .toList();
+              return AlertDialog(
+                title: const Text('Add a scholar to this job'),
+                content: SizedBox(
+                    width: 400,
+                    height: 360,
+                    child: Column(children: [
+                      TextField(
+                          key: const Key('popup-add-claimer-search'),
+                          autofocus: true,
+                          decoration: const InputDecoration(
+                              hintText: 'Search by name', prefixIcon: Icon(Icons.search)),
+                          onChanged: (v) => setDialog(() => query = v)),
+                      const SizedBox(height: 8),
+                      Expanded(
+                          child: shown.isEmpty
+                              ? const Center(child: Text('No other scholars match.'))
+                              : ListView(children: [
+                                  for (final e in shown)
+                                    ListTile(
+                                        key: Key('popup-add-claimer-${e.key}'),
+                                        minVerticalPadding: 12,
+                                        title: Text(e.value),
+                                        onTap: () => Navigator.pop(context, e.key)),
+                                ])),
+                    ])),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                ],
+              );
+            }));
+    if (picked == null || !mounted) return;
+    await _run(() async {
+      await repo.addClaimer(job.jobId, picked);
+    }, 'Added ${widget.nameOf(picked)} to the job.');
+  }
+
   Future<void> _cancel(Job job) async {
     if (!await _confirm(
             'Cancel ${job.jobId}?',
@@ -267,6 +324,33 @@ class _JobPopupState extends State<JobPopup> {
           people: widget.people,
           job: job);
     }, '', showProgress: false);
+  }
+
+  // the remake form by default; onCreateRemake replaces it. after saving,
+  // this popup (now a Failed job) closes and the remake's popup opens with
+  // the result: claimed by you, or waiting in Requested and what's short.
+  Future<void> _createRemake(Job job) async {
+    if (widget.onCreateRemake != null) return widget.onCreateRemake!(job);
+    final remake = await showRemakeForm(context,
+        repository: repo, nameOf: widget.nameOf, people: widget.people, job: job);
+    if (remake == null || !mounted) return;
+    // the navigator outlives this popup, so the next one opens from it
+    final navigator = Navigator.of(context);
+    var message = 'Created remake ${remake.jobId}.';
+    try {
+      message = RemakeDraft.outcomeMessage(remake, await repo.stockFor(remake));
+    } catch (_) {
+      // the remake is saved either way; its popup shows the live state
+    }
+    if (!mounted) return;
+    navigator.pop();
+    showJobPopup(navigator.context,
+        repository: repo,
+        nameOf: widget.nameOf,
+        people: widget.people,
+        jobId: remake.jobId,
+        onEditJob: widget.onEditJob,
+        notice: message);
   }
 
   void _related(String id) => showJobPopup(context,
@@ -459,6 +543,14 @@ class _JobPopupState extends State<JobPopup> {
               Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(widget.nameOf(uid))),
+            if (job.status == JobStatus.inProgress &&
+                Permissions.canAddClaimer(repo.user, job, '') == null)
+              Align(
+                  alignment: Alignment.centerLeft,
+                  child: _button('Add scholar', 'popup-add-claimer', () => _addClaimer(job),
+                      reason: widget.people.keys.every(job.isClaimedBy)
+                          ? 'Everyone on the scholar list is already on this job.'
+                          : null)),
             _field('Date claimed', _time(job.claimedAt)),
           ],
           if (job.completedAt != null)
@@ -510,11 +602,7 @@ class _JobPopupState extends State<JobPopup> {
           _button(
               'Create remake',
               'popup-create-remake',
-              () => _run(() => widget.onCreateRemake!(job), '',
-                  showProgress: false),
-              reason: widget.onCreateRemake == null
-                  ? 'The remake form is coming in Part 2.'
-                  : null),
+              () => _run(() => _createRemake(job), '', showProgress: false)),
         if (Permissions.canEdit(repo.user, job) == null)
           _button('Edit', 'popup-edit', () => _edit(job)),
         if (Permissions.canCancel(repo.user, job) == null)

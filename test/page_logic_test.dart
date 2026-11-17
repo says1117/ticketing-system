@@ -97,6 +97,12 @@ void main() {
     expect(PageLogic.isOverdue(job('a', dueDay: 1, status: JobStatus.completed), today), isFalse);
   });
 
+  test('the In-Progress status reads Overdue once the due day has passed', () {
+    final today = DateTime(2026, 11, 13, 15);
+    expect(PageLogic.jobStatusText(job('a', dueDay: 12, status: JobStatus.inProgress), today), 'Overdue');
+    expect(PageLogic.jobStatusText(job('a', dueDay: 13, status: JobStatus.inProgress), today), 'In progress');
+  });
+
   group('Log feed', () {
     HistoryEntry h(String id, HistoryType type, String user, int hour, {String job = 'JOB-0001', String? from, String? to}) =>
         HistoryEntry(id: id, jobId: job, type: type, user: user, timestamp: DateTime.utc(2026, 11, 10, hour), from: from, to: to);
