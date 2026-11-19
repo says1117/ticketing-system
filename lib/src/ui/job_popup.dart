@@ -88,6 +88,11 @@ class _JobPopupState extends State<JobPopup> {
   bool _loaded = false;
   bool _inventoryLoaded = false;
   bool _commentsLoaded = false;
+  // a failed job's remake ticket, watched live for the Failure section
+  StreamSubscription<Job?>? _remakeSubscription;
+  String? _watchedRemakeId;
+  Job? _remake;
+  bool _remakeLoaded = false;
   bool _busy = false;
   bool _showProgress = false;
   String _error = '';
@@ -115,6 +120,7 @@ class _JobPopupState extends State<JobPopup> {
           _job = job;
           _loaded = true;
         });
+        _watchRemake(job?.remadeAs);
       }
     }, onError: error));
     _subscriptions.add(repo.watchInventory().listen((items) {
@@ -141,8 +147,30 @@ class _JobPopupState extends State<JobPopup> {
     for (final subscription in _subscriptions) {
       subscription.cancel();
     }
+    _remakeSubscription?.cancel();
     _comment.dispose();
     super.dispose();
+  }
+
+  // follows the job's remadeAs. it's set once, when the job fails, which can
+  // happen while this popup is open, so the watch starts whenever it appears.
+  void _watchRemake(String? remakeId) {
+    if (remakeId == _watchedRemakeId) return;
+    _remakeSubscription?.cancel();
+    _watchedRemakeId = remakeId;
+    _remake = null;
+    _remakeLoaded = false;
+    if (remakeId == null) return;
+    _remakeSubscription = repo.watchJob(remakeId).listen((remake) {
+      if (mounted) {
+        setState(() {
+          _remake = remake;
+          _remakeLoaded = true;
+        });
+      }
+    }, onError: (Object _) {
+      if (mounted) setState(() => _remakeLoaded = true);
+    });
   }
 
   String _time(DateTime? value) => value == null
@@ -239,15 +267,18 @@ class _JobPopupState extends State<JobPopup> {
   // claimers bring teammates onto the job. people is every active scholar;
   // there can be many, so the list is searchable.
   Future<void> _addClaimer(Job job) async {
-    final choices = (widget.people.entries.where((e) => !job.isClaimedBy(e.key)).toList()
+    final choices = (widget.people.entries
+        .where((e) => !job.isClaimedBy(e.key))
+        .toList()
       ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase())));
     var query = '';
     final picked = await showDialog<String>(
         context: context,
-        builder: (context) => StatefulBuilder(
-            builder: (context, setDialog) {
+        builder: (context) => StatefulBuilder(builder: (context, setDialog) {
               final shown = choices
-                  .where((e) => e.value.toLowerCase().contains(query.trim().toLowerCase()))
+                  .where((e) => e.value
+                      .toLowerCase()
+                      .contains(query.trim().toLowerCase()))
                   .toList();
               return AlertDialog(
                 title: const Text('Add a scholar to this job'),
@@ -259,23 +290,28 @@ class _JobPopupState extends State<JobPopup> {
                           key: const Key('popup-add-claimer-search'),
                           autofocus: true,
                           decoration: const InputDecoration(
-                              hintText: 'Search by name', prefixIcon: Icon(Icons.search)),
+                              hintText: 'Search by name',
+                              prefixIcon: Icon(Icons.search)),
                           onChanged: (v) => setDialog(() => query = v)),
                       const SizedBox(height: 8),
                       Expanded(
                           child: shown.isEmpty
-                              ? const Center(child: Text('No other scholars match.'))
+                              ? const Center(
+                                  child: Text('No other scholars match.'))
                               : ListView(children: [
                                   for (final e in shown)
                                     ListTile(
                                         key: Key('popup-add-claimer-${e.key}'),
                                         minVerticalPadding: 12,
                                         title: Text(e.value),
-                                        onTap: () => Navigator.pop(context, e.key)),
+                                        onTap: () =>
+                                            Navigator.pop(context, e.key)),
                                 ])),
                     ])),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Close')),
                 ],
               );
             }));
@@ -333,7 +369,10 @@ class _JobPopupState extends State<JobPopup> {
   Future<void> _createRemake(Job job) async {
     if (widget.onCreateRemake != null) return widget.onCreateRemake!(job);
     final remake = await showRemakeForm(context,
-        repository: repo, nameOf: widget.nameOf, people: widget.people, job: job);
+        repository: repo,
+        nameOf: widget.nameOf,
+        people: widget.people,
+        job: job);
     if (remake == null || !mounted) return;
     // the navigator outlives this popup, so the next one opens from it
     final navigator = Navigator.of(context);
@@ -540,7 +579,8 @@ class _JobPopupState extends State<JobPopup> {
           if (job.status != JobStatus.requested) ...[
             // "Claimed by" while open, "Scholars" once closed (closed_job_logic.dart)
             _heading(ClosedJobLogic.peopleHeading(job)),
-            if (job.claimers.isEmpty) Text(job.isOpen ? 'No claimers.' : 'Nobody was on this job.'),
+            if (job.claimers.isEmpty)
+              Text(job.isOpen ? 'No claimers.' : 'Nobody was on this job.'),
             for (final uid in job.claimers.keys)
               Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -549,15 +589,16 @@ class _JobPopupState extends State<JobPopup> {
                 Permissions.canAddClaimer(repo.user, job, '') == null)
               Align(
                   alignment: Alignment.centerLeft,
-                  child: _button('Add scholar', 'popup-add-claimer', () => _addClaimer(job),
+                  child: _button('Add scholar', 'popup-add-claimer',
+                      () => _addClaimer(job),
                       reason: widget.people.keys.every(job.isClaimedBy)
                           ? 'Everyone on the scholar list is already on this job.'
                           : null)),
             _field('Date claimed', _time(job.claimedAt)),
           ],
-          // completed and cancelled jobs show when they closed; a failed job's
-          // date comes from its remake, which step 3 loads (null until then)
-          if (ClosedJobLogic.closedOn(job, null) case (final label, final date))
+          // when it closed. a failed job's date comes from its remake ticket
+          if (ClosedJobLogic.closedOn(job, FailureDetails.of(job, _remake))
+              case (final label, final date))
             _field(label, _time(date)),
           _heading(ClosedJobLogic.partsHeading(job)),
           if (!_inventoryLoaded)
@@ -576,9 +617,33 @@ class _JobPopupState extends State<JobPopup> {
                   child: Text(
                       '${_inventory[defect.key]?.name ?? defect.key} × ${defect.value.count}\n${defect.value.reason.isEmpty ? 'No reason provided.' : defect.value.reason}')),
           ],
+          if (job.status == JobStatus.remade) _failureSection(job),
           _commentsSection(job),
         ],
       );
+
+  // what failed and why, from the remake ticket (see FailureDetails)
+  Widget _failureSection(Job job) {
+    final failure = FailureDetails.of(job, _remake);
+    return Column(
+        key: const Key('popup-failure'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _heading('Failure'),
+          if (failure != null) ...[
+            _field('Parts failed', '${failure.partsFailed}'),
+            for (final line in ClosedJobLogic.failureLines(failure,
+                (id) => _inventory[id]?.name ?? 'Unavailable part ($id)'))
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(line)),
+          ] else if (!_remakeLoaded && job.remadeAs != null)
+            const LinearProgressIndicator()
+          else
+            Text(
+                'The failure details are on remake ${job.remadeAs ?? '(unknown)'}, which couldn\'t be found.'),
+        ]);
+  }
 
   Widget _actions(Job job) => Wrap(spacing: 8, runSpacing: 4, children: [
         if (job.isOpen && !job.isClaimedBy(repo.user.uid))
@@ -601,9 +666,7 @@ class _JobPopupState extends State<JobPopup> {
         if (Permissions.canComplete(repo.user, job) == null)
           _button('Complete', 'popup-complete', () => _complete(job)),
         if (Permissions.canCreateRemake(repo.user, job) == null)
-          _button(
-              'Create remake',
-              'popup-create-remake',
+          _button('Create remake', 'popup-create-remake',
               () => _run(() => _createRemake(job), '', showProgress: false)),
         if (Permissions.canEdit(repo.user, job) == null)
           _button('Edit', 'popup-edit', () => _edit(job)),

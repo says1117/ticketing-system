@@ -137,6 +137,51 @@ void main() {
     expect(find.text('Sam Okafor marked JOB-0001 "Left arm" as failed (remake JOB-0004)'), findsOneWidget);
   });
 
+  // part 3 end to end: each kind of closed job opens from the Log in its read-only view
+  testWidgets('Log entries open completed, failed and cancelled jobs read-only', (tester) async {
+    final asSam = TicketingRepository(store: store, user: sam);
+    final asLee = TicketingRepository(store: store, user: lee);
+    await asSam.complete('JOB-0001');
+    await asLee.cancel('JOB-0002');
+    final arm = await asLee.createJob(
+        jobName: 'Right arm', requestedBy: 'lee', dueDate: DateTime.utc(2030, 1, 1), parts: {'-tip': 2});
+    await asSam.claim(arm.jobId);
+    await asSam.createRemake(arm.jobId, defects: {'-tip': const Defect(count: 1, reason: 'bent')});
+    await pumpPage(tester, admin);
+    await tester.tap(find.byKey(const Key('tab-log')));
+    await tester.pumpAndSettle();
+
+    Future<void> openFromLog(String filter, String sentence) async {
+      await tester.tap(find.byKey(Key('log-$filter')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining(sentence));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> close() async {
+      await tester.tap(find.byKey(const Key('popup-close')));
+      await tester.pumpAndSettle();
+    }
+
+    await openFromLog('completed', 'marked JOB-0001');
+    expect(find.text('Date completed'), findsOneWidget);
+    expect(find.text('Scholars'), findsOneWidget);
+    expect(find.text('Parts used'), findsOneWidget);
+    expect(find.byKey(const Key('popup-complete')), findsNothing);
+    await close();
+
+    await openFromLog('failed', 'marked ${arm.jobId}');
+    expect(find.text('Date failed'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('popup-failure')));
+    expect(find.text('Fingertip × 1: bent'), findsOneWidget);
+    await close();
+
+    await openFromLog('all', 'cancelled JOB-0002');
+    expect(find.text('Date cancelled'), findsOneWidget);
+    expect(find.text('Parts requested (returned to inventory)'), findsOneWidget);
+    expect(find.byKey(const Key('popup-claim')), findsNothing);
+  });
+
   testWidgets('phones get cards with labelled buttons', (tester) async {
     await pumpPage(tester, sam, size: const Size(390, 844));
     expect(find.text('Job Name'), findsNothing, reason: 'no table header on phones');

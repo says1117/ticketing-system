@@ -15,7 +15,7 @@ phone photos, so downscale before viewing:
 
 ## 1. Where things stand
 
-**Built and tested (148 Dart tests, 45 Firebase emulator tests):**
+**Built and tested (163 Dart tests, 45 Firebase emulator tests):**
 
 | Piece | Files |
 | --- | --- |
@@ -25,6 +25,7 @@ phone photos, so downscale before viewing:
 | Main page: search, In-Progress / Requested / Log tabs, sort, Claim, Unclaim | `lib/src/ui/ticketing_page.dart`, `lib/src/ui/page_logic.dart` |
 | Add Job form, also used for Edit | `lib/src/ui/job_form.dart` |
 | Job popup (Part 1), live, opens by default on click | `lib/src/ui/job_popup.dart` |
+| Log popup (Part 3): closed jobs read-only, Failure section | `lib/src/ui/job_popup.dart`, `closed_job_logic.dart` |
 | Remake form (Part 2), opened from the popup | `lib/src/ui/remake_form.dart`, `remake_logic.dart`, `form_fields.dart` |
 | Preview web app with sample data | `preview/` |
 
@@ -32,8 +33,8 @@ phone photos, so downscale before viewing:
 
 1. ~~Job popup~~ (done, uncommitted, awaiting owner review).
 2. ~~Remake ("failure") form~~ (done, uncommitted, awaiting owner review).
-3. Log popup: what you see when you click a Log entry.
-4. Integration into lsicompapp.
+3. ~~Log popup~~ (done, awaiting owner review).
+4. ~~Integration into lsicompapp~~ (built on lsicompapp's `ticketing` branch; running it needs the team's Flutter version, see section 7).
 5. Deployment prerequisites.
 6. Trial run.
 
@@ -267,8 +268,8 @@ after each step; a paste-ready prompt runs the code walkthrough in a Codex app c
 1. ~~Closed-job rules in plain Dart: `lib/src/ui/closed_job_logic.dart` +
    tests (headings by status, closing date, `FailureDetails` from the remake).~~ Done.
 2. ~~Read-only popup for completed and cancelled jobs, using step 1.~~ Done.
-3. Failure section for failed jobs, kept live from the remake ticket.
-4. End to end: Log entry opens the right view; preview data; docs.
+3. ~~Failure section for failed jobs, kept live from the remake ticket.~~ Done.
+4. ~~End to end: Log entry opens the right view; preview data; docs.~~ Done.
 
 ---
 
@@ -277,6 +278,54 @@ after each step; a paste-ready prompt runs the code walkthrough in a Codex app c
 lsicompapp lives at `../../lsicompapp`, a sibling of this repo's folder. Its
 pages follow the pattern of `lib/team/main/cs/sha_keys.dart` (the owner wrote
 that one).
+
+**Status (2026-11-19), on lsicompapp's `ticketing` branch:**
+- Done by Luis (commit 64baa09): the nav tile **Ticketing** in Engine, the
+  `AppScreens.ticketing` value, the `/ticketing` route, and a placeholder
+  `TicketingScreen` (in `lib/team/main/engineering/ticketing.dart`) wrapped in
+  `PopScope`.
+- Done: `lsi_ticketing` added to `pubspec.yaml` as a `git:` dependency on
+  https://github.com/says1117/ticketing-system.git (public), with a
+  commented-out `path:` line, like `lsilogin`. The lock file pins one commit;
+  after pushing here, run `flutter pub upgrade lsi_ticketing` in lsicompapp.
+- **Who sees the tile (owner decision):** admins and the Manufacturing,
+  Production, Finishing and Quality departments, plus everyone in dev mode.
+  For testing, Computer Science too (marked `// TESTING`; remove before
+  rollout). The package's own permissions still allow any active user; the
+  nav tile is the gate.
+- **Build steps** (review after each; a paste-ready prompt runs the code
+  walkthrough in a Codex app chat):
+  1. ~~Fake dev data: `assets/json/ticketing_dev_data.json` (sample inventory
+     and scholars) and `lib/team/main/engineering/ticketing_dev_data.dart`
+     (`TicketingDevData.parse`), with `test/ticketing_dev_data_test.dart`.~~ Done.
+  2. ~~Wire `TicketingPage` into `TicketingScreen`.~~ Done. Split in three so
+     tests never import the app: `ticketing_setup.dart` (plain Dart: the
+     picker list, active-filtered for admins who have `allUsersData`, and
+     `nameOf`), `ticketing_host.dart` (`TicketingHost`: user or "no access",
+     opens the store once, spinner and error states), and `ticketing.dart`
+     (`TicketingScreen`: app globals, plus Firebase or the dev data cached for
+     the session). Tests: `test/ticketing_setup_test.dart`,
+     `test/ticketing_host_test.dart`. lsicompapp allows Dart 2.18, so no
+     records or patterns in its files.
+  3. ~~Verify and update docs.~~ Done, with one blocker: on Flutter 3.50 (this
+     Mac) lsicompapp doesn't compile at all, because of `const Row(...)` in
+     `lsilogin`, `Customization`, `ap_log.dart`, `confRoom.dart`, `main.dart`,
+     `changeTime.dart` and `printRequest.dart` ("Constant evaluation error" on
+     `CrossAxisAlignment`). None of these are ticketing files: compiling
+     `ticketing.dart` on its own shows only `lsilogin`'s error. To open the
+     page, use the Flutter version the lsicompapp team uses (Luis's
+     placeholder built, so ask him), then
+     `flutter run -d web-server --web-port 4002 --dart-define=DEV_MODE=true`
+     and Engine > Ticketing.
+- Note: lsicompapp's dev mode already fakes its own database (`Database`'s
+  `_devStore`, saved in localStorage). Ticketing doesn't use it: the page
+  needs live updates (`watch`), which that store doesn't offer, so dev mode
+  uses `MemoryTicketingStore` seeded from the JSON file instead.
+- Note: lsicompapp's only existing test, `test/widget_test.dart` (Flutter's
+  counter template), doesn't compile in the test runner: importing the whole
+  app hits "Constant evaluation error"s in `lsilogin`, `ap_log.dart` and
+  `confRoom.dart`. Judge lsicompapp by `flutter analyze` and the ticketing
+  tests, and keep ticketing tests from importing the whole app.
 
 1. `lsicompapp/pubspec.yaml`: add
    `lsi_ticketing: { path: ../Ticketing System/ticketing }` (or a git URL once

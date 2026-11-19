@@ -289,7 +289,12 @@ void main() {
         find.byKey(const Key('popup-details')).last, const Offset(0, -500));
     await tester.pumpAndSettle();
     expect(find.text('Parts used by the original'), findsOneWidget);
-    expect(find.textContaining('Cracked joint'), findsOneWidget);
+    // the failed job's popup underneath shows it too, in its Failure section
+    expect(
+        find.descendant(
+            of: find.byType(JobPopup).last,
+            matching: find.textContaining('Cracked joint')),
+        findsOneWidget);
   });
 
   testWidgets('edit opens the existing form and updates the live job',
@@ -403,6 +408,57 @@ void main() {
       expect(find.text('Claimed by'), findsOneWidget);
       expect(find.text('Parts needed'), findsOneWidget);
       expect(find.text('Scholars'), findsNothing);
+    });
+  });
+
+  group('failed jobs show their failure', () {
+    testWidgets('date failed, parts failed and reasons come from the remake',
+        (tester) async {
+      final job = await create();
+      await as(claimer).claim(job.jobId);
+      final remake = await as(quality).createRemake(job.jobId,
+          defects: {'tip': const Defect(count: 2, reason: 'Cracked joint')});
+      await open(tester, quality, job.jobId);
+      expect(find.text('Failed'), findsOneWidget);
+      expect(find.text('Scholars'), findsOneWidget);
+      expect(find.text('Parts used'), findsOneWidget);
+      expect(find.text('Date failed'), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('popup-failure')));
+      expect(find.text('Failure'), findsOneWidget);
+      expect(find.text('Parts failed'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('Fingertip × 2: Cracked joint'), findsOneWidget);
+      expect(find.text('Remade as ${remake.jobId}'), findsOneWidget);
+    });
+
+    testWidgets('a job that fails while its popup is open fills in live',
+        (tester) async {
+      final job = await create();
+      await as(claimer).claim(job.jobId);
+      await open(tester, claimer, job.jobId);
+      expect(find.byKey(const Key('popup-failure')), findsNothing);
+      await tester.runAsync(() => as(quality).createRemake(job.jobId,
+          defects: {'tip': const Defect(count: 1)}));
+      await tester.pumpAndSettle();
+      expect(find.text('Failed'), findsOneWidget);
+      expect(find.text('Date failed'), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('popup-failure')));
+      expect(find.text('Fingertip × 1'), findsOneWidget,
+          reason: 'no reason given, so none shown');
+    });
+
+    testWidgets('a missing remake ticket says so instead of loading forever',
+        (tester) async {
+      final job = await create();
+      await as(claimer).claim(job.jobId);
+      final remake = await as(quality).createRemake(job.jobId,
+          defects: {'tip': const Defect(count: 1)});
+      await tester.runAsync(() =>
+          store.update({'${TicketingRepository.jobsPath}/${remake.jobId}': null}));
+      await open(tester, quality, job.jobId);
+      await tester.ensureVisible(find.byKey(const Key('popup-failure')));
+      expect(find.textContaining("couldn't be found"), findsOneWidget);
+      expect(find.text('Date failed'), findsNothing);
     });
   });
 }

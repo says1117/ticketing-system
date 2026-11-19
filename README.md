@@ -159,6 +159,16 @@ with the short parts named. The form's rules are plain Dart in
 `lib/src/ui/remake_logic.dart`; the requester, due date and priority fields are
 shared with the job form through `lib/src/ui/form_fields.dart`.
 
+Closed jobs open the same popup, read-only (clicked from a table or from the
+Log). Headings follow the status ("Scholars" instead of "Claimed by", "Parts
+used"), and the popup shows when the job closed: Date completed, Date
+cancelled, or Date failed. A failed job also has a **Failure** section: the
+number of parts that failed and, per part, the count and reason. Those come
+from its remake ticket, which the popup watches live through `remadeAs`.
+The rules are plain Dart in `lib/src/ui/closed_job_logic.dart`
+(`ClosedJobLogic`, `FailureDetails`). Only actions the permissions allow
+appear, which on a closed job is just Create remake on a completed one.
+
 The search, sorting and Log sentences are plain functions in
 `lib/src/ui/page_logic.dart`.
 
@@ -188,24 +198,37 @@ tool/export_rule_fixtures.dart  records the repository's writes for the emulator
 rules_test/                     security rule tests in the Firebase emulator
 ```
 
-## Using it in lsicompapp (later)
+## Using it in lsicompapp
+
+lsicompapp's `ticketing` branch shows this page under **Engine > Ticketing**.
+It gets the package from GitHub:
 
 ```yaml
 # lsicompapp/pubspec.yaml
 lsi_ticketing:
-  path: ../Ticketing System/ticketing
+  # path: ../Ticketing System/ticketing
+  git:
+    url: https://github.com/says1117/ticketing-system.git
 ```
 
-```dart
-final store = RtdbTicketingStore(FirebaseDatabase.instanceFor(
-  app: Firebase.app(),
-  databaseURL: 'https://limbitless-solutions-team.firebaseio.com/',
-));
-final user = TicketingUser.fromOrgData(currentUser.uid, userData['orgData'])!; // null = inactive
-final repo = TicketingRepository(store: store, user: user);
-```
+The lock file pins one commit. After pushing changes here, run
+`flutter pub upgrade lsi_ticketing` in lsicompapp. To try unpushed changes,
+use the `path:` line instead.
 
-In DEV_MODE, pass a `MemoryTicketingStore({'inventory': ...})` instead.
+The lsicompapp side is in `lib/team/main/engineering/`:
+
+| File | What it does |
+| --- | --- |
+| `ticketing.dart` | `TicketingScreen` (route `/ticketing`): reads the app's globals and opens the store: Firebase's `team` database, or in DEV_MODE the sample data below |
+| `ticketing_host.dart` | `TicketingHost`: builds the `TicketingUser` (inactive means a "no access" message), opens the store once, and shows `TicketingPage` |
+| `ticketing_setup.dart` | Who appears in the pickers (active scholars for admins, who have `allUsersData`; everyone in `usersProfile` otherwise) and `nameOf` |
+| `ticketing_dev_data.dart` | Reads `assets/json/ticketing_dev_data.json`, the DEV_MODE sample inventory and scholars, with clear errors for a malformed file |
+
+In DEV_MODE the page runs on a `MemoryTicketingStore` seeded from that JSON
+file. It's loaded once per app session, so jobs survive leaving the page but
+reset on reload. The nav tile shows for admins and the Manufacturing,
+Production, Finishing and Quality departments (plus Computer Science while
+testing, marked `// TESTING`).
 
 ## Security rules
 
