@@ -13,6 +13,7 @@ import '../models/enums.dart';
 import '../models/inventory_item.dart';
 import '../models/job.dart';
 import '../rules/permissions.dart';
+import 'closed_job_logic.dart';
 import 'job_form.dart';
 import 'page_logic.dart';
 import 'remake_form.dart';
@@ -537,8 +538,9 @@ class _JobPopupState extends State<JobPopup> {
           _field('Due date', DateFormat('MMM d, y').format(job.neededBy)),
           _field('Priority', PageLogic.priorityLabel(job.priority)),
           if (job.status != JobStatus.requested) ...[
-            _heading('Claimed by'),
-            if (job.claimers.isEmpty) const Text('No claimers.'),
+            // "Claimed by" while open, "Scholars" once closed (closed_job_logic.dart)
+            _heading(ClosedJobLogic.peopleHeading(job)),
+            if (job.claimers.isEmpty) Text(job.isOpen ? 'No claimers.' : 'Nobody was on this job.'),
             for (final uid in job.claimers.keys)
               Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -553,11 +555,11 @@ class _JobPopupState extends State<JobPopup> {
                           : null)),
             _field('Date claimed', _time(job.claimedAt)),
           ],
-          if (job.completedAt != null)
-            _field('Date completed', _time(job.completedAt)),
-          _heading(job.status == JobStatus.requested
-              ? 'Parts required'
-              : 'Parts needed'),
+          // completed and cancelled jobs show when they closed; a failed job's
+          // date comes from its remake, which step 3 loads (null until then)
+          if (ClosedJobLogic.closedOn(job, null) case (final label, final date))
+            _field(label, _time(date)),
+          _heading(ClosedJobLogic.partsHeading(job)),
           if (!_inventoryLoaded)
             const LinearProgressIndicator()
           else

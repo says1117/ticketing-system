@@ -262,6 +262,14 @@ popups:
 - The Log's **All / Completed / Failed** chips already exist
   (`PageLogic.logEntries`).
 
+**Build steps** (owner chose: reuse the job popup in read-only mode; review
+after each step; a paste-ready prompt runs the code walkthrough in a Codex app chat):
+1. ~~Closed-job rules in plain Dart: `lib/src/ui/closed_job_logic.dart` +
+   tests (headings by status, closing date, `FailureDetails` from the remake).~~ Done.
+2. ~~Read-only popup for completed and cancelled jobs, using step 1.~~ Done.
+3. Failure section for failed jobs, kept live from the remake ticket.
+4. End to end: Log entry opens the right view; preview data; docs.
+
 ---
 
 ## 7. Part 4: Integration into lsicompapp

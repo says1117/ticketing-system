@@ -12,6 +12,7 @@ export 'src/models/history_entry.dart';
 export 'src/models/inventory_item.dart';
 export 'src/models/job.dart';
 export 'src/rules/permissions.dart';
+export 'src/ui/closed_job_logic.dart';
 export 'src/ui/page_logic.dart';
 export 'src/ui/remake_logic.dart';
 export 'src/ui/ticketing_page.dart';

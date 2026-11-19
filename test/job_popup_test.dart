@@ -363,4 +363,46 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.getSize(find.byType(Dialog)).width, 800);
   });
+
+  group('closed jobs are read-only', () {
+    const actions = ['popup-claim', 'popup-unclaim', 'popup-complete', 'popup-edit', 'popup-cancel', 'popup-add-claimer'];
+
+    testWidgets('completed: Scholars, Parts used, Date completed, and only Create remake', (tester) async {
+      final job = await create();
+      await as(claimer).claim(job.jobId);
+      await as(claimer).complete(job.jobId);
+      await open(tester, claimer, job.jobId);
+      expect(find.text('Scholars'), findsOneWidget);
+      expect(find.text('Claimed by'), findsNothing);
+      expect(find.text('Parts used'), findsOneWidget);
+      expect(find.text('Date completed'), findsOneWidget);
+      for (final key in actions) {
+        expect(find.byKey(Key(key)), findsNothing, reason: key);
+      }
+      expect(find.byKey(const Key('popup-create-remake')), findsOneWidget, reason: 'a defect can still be reported');
+    });
+
+    testWidgets('cancelled: when it was cancelled, parts went back, and no actions at all', (tester) async {
+      final job = await create();
+      await as(claimer).claim(job.jobId);
+      await as(requester).cancel(job.jobId);
+      await open(tester, admin, job.jobId);
+      expect(find.text('Scholars'), findsOneWidget);
+      expect(find.text('Sam'), findsOneWidget, reason: 'who worked on it is kept');
+      expect(find.text('Date cancelled'), findsOneWidget);
+      expect(find.text('Parts requested (returned to inventory)'), findsOneWidget);
+      for (final key in [...actions, 'popup-create-remake']) {
+        expect(find.byKey(Key(key)), findsNothing, reason: key);
+      }
+    });
+
+    testWidgets('open jobs keep their working headings', (tester) async {
+      final job = await create();
+      await as(claimer).claim(job.jobId);
+      await open(tester, claimer, job.jobId);
+      expect(find.text('Claimed by'), findsOneWidget);
+      expect(find.text('Parts needed'), findsOneWidget);
+      expect(find.text('Scholars'), findsNothing);
+    });
+  });
 }
